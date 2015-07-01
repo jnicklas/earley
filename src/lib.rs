@@ -39,6 +39,16 @@ pub struct Item {
     next: usize,
 }
 
+impl Item {
+    fn new(rule: usize, start: usize) -> Item {
+        Item { rule: rule, next: 0, start: start }
+    }
+
+    fn advance(&self) -> Item {
+        Item { rule: self.rule, next: self.next + 1, start: self.start }
+    }
+}
+
 pub type ItemTable = Vec<Vec<Item>>;
 
 fn push(operation: &str, grammar: &Grammar, s: &mut ItemTable, index: usize, item: Item) {
@@ -64,14 +74,14 @@ fn render_item(grammar: &Grammar, item: &Item) -> String {
 pub fn predict(grammar: &Grammar, s: &mut ItemTable, char_index: usize, token: &str) {
     for (rule_index, rule) in grammar.rules.iter().enumerate() {
         if rule.name == token {
-            push("predicting", grammar, s, char_index, Item { rule: rule_index, next: 0, start: char_index });
+            push("predicting", grammar, s, char_index, Item::new(rule_index, char_index));
         }
     }
 }
 
 pub fn scan(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: usize, current_char: &str, token: &str) {
     if token == current_char {
-        push("scanning", grammar, s, char_index + 1, Item { rule: item.rule, next: item.next + 1, start: item.start });
+        push("scanning", grammar, s, char_index + 1, item.advance());
     }
 }
 
@@ -79,7 +89,7 @@ pub fn complete(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: us
     for old_item in s[item.start].clone() {
         if let Some(&NonTerminal(token)) = grammar.rules[old_item.rule].tokens.get(old_item.next) {
             if token == grammar.rules[item.rule].name {
-                push("completing", grammar, s, char_index, Item { rule: old_item.rule, next: old_item.next + 1, start: old_item.start });
+                push("completing", grammar, s, char_index, old_item.advance());
             }
         }
     }
