@@ -49,13 +49,23 @@ impl Item {
     }
 }
 
-pub type ItemTable = Vec<Vec<Item>>;
+pub struct ItemTable<'a> {
+    pub table: Vec<Vec<Item>>,
+    pub grammar: &'a Grammar,
+}
 
-fn push(operation: &str, grammar: &Grammar, s: &mut ItemTable, index: usize, item: Item) {
-    if let Some(mut items) = s.get_mut(index) {
-        if !items.contains(&item) {
-            debug!("|- {} :: {}", operation, render_item(grammar, &item));
-            items.push(item);
+
+impl<'a> ItemTable<'a> {
+    fn new(grammar: &Grammar, length: usize) -> ItemTable {
+        ItemTable { grammar: grammar, table: vec![vec![]; length + 1] }
+    }
+
+    fn push(&mut self, operation: &str, index: usize, item: Item) {
+        if let Some(mut items) = self.table.get_mut(index) {
+            if !items.contains(&item) {
+                debug!("|- {} :: {}", operation, render_item(self.grammar, &item));
+                items.push(item);
+            }
         }
     }
 }
@@ -71,35 +81,35 @@ fn render_item(grammar: &Grammar, item: &Item) -> String {
     format!("{} -> {}", rule.name, tokens.connect(" "))
 }
 
-pub fn predict(grammar: &Grammar, s: &mut ItemTable, char_index: usize, token: &str) {
-    for (rule_index, rule) in grammar.rules.iter().enumerate() {
+pub fn predict(s: &mut ItemTable, char_index: usize, token: &str) {
+    for (rule_index, rule) in s.grammar.rules.iter().enumerate() {
         if rule.name == token {
-            push("predicting", grammar, s, char_index, Item::new(rule_index, char_index));
+            s.push("predicting", char_index, Item::new(rule_index, char_index));
         }
     }
 }
 
-pub fn scan(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: usize, current_char: &str, token: &str) {
+pub fn scan(s: &mut ItemTable, item: Item, char_index: usize, current_char: &str, token: &str) {
     if token == current_char {
-        push("scanning", grammar, s, char_index + 1, item.advance());
+        s.push("scanning", char_index + 1, item.advance());
     }
 }
 
-pub fn complete(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: usize) {
-    for old_item in s[item.start].clone() {
-        if let Some(&NonTerminal(token)) = grammar.rules[old_item.rule].tokens.get(old_item.next) {
-            if token == grammar.rules[item.rule].name {
-                push("completing", grammar, s, char_index, old_item.advance());
+pub fn complete(s: &mut ItemTable, item: Item, char_index: usize) {
+    for old_item in s.table[item.start].clone() {
+        if let Some(&NonTerminal(token)) = s.grammar.rules[old_item.rule].tokens.get(old_item.next) {
+            if token == s.grammar.rules[item.rule].name {
+                s.push("completing", char_index, old_item.advance());
             }
         }
     }
 }
 
-pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
-    let mut s = vec![vec![]; input.len() + 1];
+pub fn build_items<'a>(grammar: &'a Grammar, input: &str) -> ItemTable<'a> {
+    let mut s = ItemTable::new(grammar, input.len());
 
     for (rule_index, _) in grammar.rules.iter().filter(|r| r.name == grammar.starting_rule).enumerate() {
-        s[0].push(Item { rule: rule_index, start: 0, next: 0 })
+        s.push("initializing", 0, Item::new(rule_index, 0))
     }
 
     let chars = UnicodeSegmentation::graphemes(input, true).chain(Some("\0").into_iter());
@@ -107,14 +117,14 @@ pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
     for (char_index, current_char) in chars.enumerate() {
         debug!("-----> {} matching {}", char_index, current_char);
         let mut item_index = 0;
-        while item_index < s[char_index].len() {
-            let item = s[char_index][item_index];
+        while item_index < s.table[char_index].len() {
+            let item = s.table[char_index][item_index];
             let next_item = grammar.rules[item.rule].tokens.get(item.next);
             debug!("[{}, {}] :: {} || {:?}", char_index, item_index, render_item(&grammar, &item), next_item);
             match next_item {
-                Some(&NonTerminal(token)) => predict(grammar, &mut s, char_index, token),
-                Some(&Terminal(token)) => scan(grammar, &mut s, item, char_index, current_char, token),
-                None => complete(grammar, &mut s, item, char_index),
+                Some(&NonTerminal(token)) => predict(&mut s, char_index, token),
+                Some(&Terminal(token)) => scan(&mut s, item, char_index, current_char, token),
+                None => complete(&mut s, item, char_index),
             }
             item_index += 1;
         }
@@ -123,11 +133,11 @@ pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
     return s;
 }
 
-pub fn matching_items(grammar: &Grammar, items: &ItemTable) -> Vec<Item> {
-    if let Some(items) = items.last() {
+pub fn matching_items(s: &ItemTable) -> Vec<Item> {
+    if let Some(items) = s.table.last() {
        items.iter().filter(|item| {
-           let rule = &grammar.rules[item.rule];
-           rule.name == grammar.starting_rule && item.next >= rule.tokens.len() && item.start == 0
+           let rule = &s.grammar.rules[item.rule];
+           rule.name == s.grammar.starting_rule && item.next >= rule.tokens.len() && item.start == 0
        }).map(Clone::clone).collect()
     } else {
         Vec::new()

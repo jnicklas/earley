@@ -25,10 +25,10 @@ fn main() {
 
     let input = "1*2";
     let items = build_items(&grammar, input);
-    let result = matching_items(&grammar, &items);
+    let result = matching_items(&items);
 
     println!("--------------------");
-    for (index, item) in items.iter().enumerate() {
+    for (index, item) in items.table.iter().enumerate() {
         println!("{}: {:?}", index, item);
     }
     println!("--------------------");
