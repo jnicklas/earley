@@ -88,7 +88,7 @@ pub fn complete(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: us
 pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
     let mut s = vec![vec![]; input.len() + 1];
 
-    for (rule_index, rule) in grammar.rules.iter().filter(|r| r.name == grammar.starting_rule).enumerate() {
+    for (rule_index, _) in grammar.rules.iter().filter(|r| r.name == grammar.starting_rule).enumerate() {
         s[0].push(Item { rule: rule_index, start: 0, next: 0 })
     }
 
@@ -97,8 +97,9 @@ pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
         let mut item_index = 0;
         while item_index < s[char_index].len() {
             let item = s[char_index][item_index];
-            debug!("[{}, {}] :: {} || {:?}", char_index, item_index, render_item(&grammar, &item), grammar.rules[item.rule].tokens.get(item.next));
-            match grammar.rules[item.rule].tokens.get(item.next) {
+            let next_item = grammar.rules[item.rule].tokens.get(item.next);
+            debug!("[{}, {}] :: {} || {:?}", char_index, item_index, render_item(&grammar, &item), next_item);
+            match next_item {
                 Some(&NonTerminal(token)) => predict(grammar, &mut s, char_index, token),
                 Some(&Terminal(token)) => scan(grammar, &mut s, item, char_index, current_char, token),
                 None => complete(grammar, &mut s, item, char_index),
