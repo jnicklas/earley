@@ -68,6 +68,30 @@ impl<'a> ItemTable<'a> {
             }
         }
     }
+
+    fn predict(&mut self, char_index: usize, token: &str) {
+        for (rule_index, rule) in self.grammar.rules.iter().enumerate() {
+            if rule.name == token {
+                self.push("predicting", char_index, Item::new(rule_index, char_index));
+            }
+        }
+    }
+
+    fn scan(&mut self, item: Item, char_index: usize, current_char: &str, token: &str) {
+        if token == current_char {
+            self.push("scanning", char_index + 1, item.advance());
+        }
+    }
+
+    fn complete(&mut self, item: Item, char_index: usize) {
+        for old_item in self.table[item.start].clone() {
+            if let Some(&NonTerminal(token)) = self.grammar.rules[old_item.rule].tokens.get(old_item.next) {
+                if token == self.grammar.rules[item.rule].name {
+                    self.push("completing", char_index, old_item.advance());
+                }
+            }
+        }
+    }
 }
 
 fn render_item(grammar: &Grammar, item: &Item) -> String {
@@ -79,30 +103,6 @@ fn render_item(grammar: &Grammar, item: &Item) -> String {
         tokens.push("*".to_string());
     }
     format!("{} -> {}", rule.name, tokens.connect(" "))
-}
-
-pub fn predict(s: &mut ItemTable, char_index: usize, token: &str) {
-    for (rule_index, rule) in s.grammar.rules.iter().enumerate() {
-        if rule.name == token {
-            s.push("predicting", char_index, Item::new(rule_index, char_index));
-        }
-    }
-}
-
-pub fn scan(s: &mut ItemTable, item: Item, char_index: usize, current_char: &str, token: &str) {
-    if token == current_char {
-        s.push("scanning", char_index + 1, item.advance());
-    }
-}
-
-pub fn complete(s: &mut ItemTable, item: Item, char_index: usize) {
-    for old_item in s.table[item.start].clone() {
-        if let Some(&NonTerminal(token)) = s.grammar.rules[old_item.rule].tokens.get(old_item.next) {
-            if token == s.grammar.rules[item.rule].name {
-                s.push("completing", char_index, old_item.advance());
-            }
-        }
-    }
 }
 
 pub fn build_items<'a>(grammar: &'a Grammar, input: &str) -> ItemTable<'a> {
@@ -122,9 +122,9 @@ pub fn build_items<'a>(grammar: &'a Grammar, input: &str) -> ItemTable<'a> {
             let next_item = grammar.rules[item.rule].tokens.get(item.next);
             debug!("[{}, {}] :: {} || {:?}", char_index, item_index, render_item(&grammar, &item), next_item);
             match next_item {
-                Some(&NonTerminal(token)) => predict(&mut s, char_index, token),
-                Some(&Terminal(token)) => scan(&mut s, item, char_index, current_char, token),
-                None => complete(&mut s, item, char_index),
+                Some(&NonTerminal(token)) => s.predict(char_index, token),
+                Some(&Terminal(token)) => s.scan(item, char_index, current_char, token),
+                None => s.complete(item, char_index),
             }
             item_index += 1;
         }
