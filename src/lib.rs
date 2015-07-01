@@ -92,7 +92,9 @@ pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
         s[0].push(Item { rule: rule_index, start: 0, next: 0 })
     }
 
-    for (char_index, current_char) in UnicodeSegmentation::graphemes(&*format!("{} ", input), true).enumerate() {
+    let chars = UnicodeSegmentation::graphemes(input, true).chain(Some("\0").into_iter());
+
+    for (char_index, current_char) in chars.enumerate() {
         debug!("-----> {} matching {}", char_index, current_char);
         let mut item_index = 0;
         while item_index < s[char_index].len() {
