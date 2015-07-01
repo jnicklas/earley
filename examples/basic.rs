@@ -1,8 +1,11 @@
 extern crate earley;
+extern crate env_logger;
 
 use earley::{Rule, Grammar, Terminal, NonTerminal, build_items, matching_items};
 
 fn main() {
+    env_logger::init().unwrap();
+
     let rules = vec![
         Rule { name: "Sum", tokens: vec![NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")] },
         Rule { name: "Sum", tokens: vec![NonTerminal("Product")] },

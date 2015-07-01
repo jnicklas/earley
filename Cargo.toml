@@ -5,3 +5,7 @@ authors = ["Jonas Nicklas <jonas.nicklas@gmail.com>"]
 
 [dependencies]
 unicode-segmentation = "*"
+log = "*"
+
+[dev-dependencies]
+env_logger = "*"

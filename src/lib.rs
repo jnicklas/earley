@@ -1,4 +1,5 @@
 extern crate unicode_segmentation;
+#[macro_use] extern crate log;
 
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -43,7 +44,7 @@ pub type ItemTable = Vec<Vec<Item>>;
 fn push(operation: &str, grammar: &Grammar, s: &mut ItemTable, index: usize, item: Item) {
     if let Some(mut items) = s.get_mut(index) {
         if !items.contains(&item) {
-            println!("|- {} :: {}", operation, render_item(grammar, &item));
+            debug!("|- {} :: {}", operation, render_item(grammar, &item));
             items.push(item);
         }
     }
@@ -60,6 +61,30 @@ fn render_item(grammar: &Grammar, item: &Item) -> String {
     format!("{} -> {}", rule.name, tokens.connect(" "))
 }
 
+pub fn predict(grammar: &Grammar, s: &mut ItemTable, char_index: usize, token: &str) {
+    for (rule_index, rule) in grammar.rules.iter().enumerate() {
+        if rule.name == token {
+            push("predicting", grammar, s, char_index, Item { rule: rule_index, next: 0, start: char_index });
+        }
+    }
+}
+
+pub fn scan(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: usize, current_char: &str, token: &str) {
+    if token == current_char {
+        push("scanning", grammar, s, char_index + 1, Item { rule: item.rule, next: item.next + 1, start: item.start });
+    }
+}
+
+pub fn complete(grammar: &Grammar, s: &mut ItemTable, item: Item, char_index: usize) {
+    for old_item in s[item.start].clone() {
+        if let Some(&NonTerminal(token)) = grammar.rules[old_item.rule].tokens.get(old_item.next) {
+            if token == grammar.rules[item.rule].name {
+                push("completing", grammar, s, char_index, Item { rule: old_item.rule, next: old_item.next + 1, start: old_item.start });
+            }
+        }
+    }
+}
+
 pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
     let mut s = vec![vec![]; input.len() + 1];
 
@@ -68,39 +93,15 @@ pub fn build_items(grammar: &Grammar, input: &str) -> ItemTable {
     }
 
     for (char_index, current_char) in UnicodeSegmentation::graphemes(&*format!("{} ", input), true).enumerate() {
-        println!("-----> {} matching {}", char_index, current_char);
+        debug!("-----> {} matching {}", char_index, current_char);
         let mut item_index = 0;
         while item_index < s[char_index].len() {
             let item = s[char_index][item_index];
-            println!("[{}, {}] :: {} || {:?}", char_index, item_index, render_item(&grammar, &item), grammar.rules[item.rule].tokens.get(item.next));
+            debug!("[{}, {}] :: {} || {:?}", char_index, item_index, render_item(&grammar, &item), grammar.rules[item.rule].tokens.get(item.next));
             match grammar.rules[item.rule].tokens.get(item.next) {
-                // Predict
-                Some(&NonTerminal(token)) => {
-                    for (rule_index, rule) in grammar.rules.iter().enumerate() {
-                        if rule.name == token {
-                            push("predicting", grammar, &mut s, char_index, Item { rule: rule_index, next: 0, start: char_index });
-                        }
-                    }
-                },
-                // Scan
-                Some(&Terminal(token)) => {
-                    if token == current_char {
-                        push("scanning", grammar, &mut s, char_index + 1, Item { rule: item.rule, next: item.next + 1, start: item.start });
-                    }
-                },
-                // Complete
-                None => {
-                    for old_item in s[item.start].clone() {
-                        match grammar.rules[old_item.rule].tokens.get(old_item.next) {
-                            Some(&NonTerminal(token)) => {
-                                if token == grammar.rules[item.rule].name {
-                                    push("completing", grammar, &mut s, char_index, Item { rule: old_item.rule, next: old_item.next + 1, start: old_item.start });
-                                }
-                            },
-                            _ => {}
-                        }
-                    }
-                }
+                Some(&NonTerminal(token)) => predict(grammar, &mut s, char_index, token),
+                Some(&Terminal(token)) => scan(grammar, &mut s, item, char_index, current_char, token),
+                None => complete(grammar, &mut s, item, char_index),
             }
             item_index += 1;
         }
