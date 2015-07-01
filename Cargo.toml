@@ -1,0 +1,7 @@
+[package]
+name = "earley"
+version = "0.1.0"
+authors = ["Jonas Nicklas <jonas.nicklas@gmail.com>"]
+
+[dependencies]
+unicode-segmentation = "*"

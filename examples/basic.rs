@@ -1,0 +1,33 @@
+extern crate earley;
+
+use earley::{Rule, Grammar, Terminal, NonTerminal, build_items, matching_items};
+
+fn main() {
+    let rules = vec![
+        Rule { name: "Sum", tokens: vec![NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")] },
+        Rule { name: "Sum", tokens: vec![NonTerminal("Product")] },
+        Rule { name: "Product", tokens: vec![NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")] },
+        Rule { name: "Product", tokens: vec![NonTerminal("Factor")] },
+        Rule { name: "Factor", tokens: vec![Terminal("("), NonTerminal("Sum"), Terminal(")")] },
+        Rule { name: "Factor", tokens: vec![NonTerminal("Number")] },
+        Rule { name: "Number", tokens: vec![Terminal("1")] },
+        Rule { name: "Number", tokens: vec![Terminal("2")] },
+        Rule { name: "Number", tokens: vec![Terminal("3")] },
+    ];
+
+    let grammar = Grammar {
+        starting_rule: "Sum",
+        rules: rules,
+    };
+
+    let input = "1*2";
+    let items = build_items(&grammar, input);
+    let result = matching_items(&grammar, &items);
+
+    println!("--------------------");
+    for (index, item) in items.iter().enumerate() {
+        println!("{}: {:?}", index, item);
+    }
+    println!("--------------------");
+    println!("{:?}", result);
+}
