@@ -77,8 +77,6 @@ mod test {
         let items = build_items(&grammar, input);
         let result = matching_items(&items);
 
-        println!("{:?}", result);
-
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].rule, 1);
         assert_eq!(result[0].start, 0);
