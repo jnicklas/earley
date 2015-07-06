@@ -24,7 +24,7 @@ impl Item {
         } else {
             tokens.push("*".to_string());
         }
-        format!("{} -> {}", rule.name, tokens.connect(" "))
+        format!("{} -> {} ({})", rule.name, tokens.connect(" "), self.start)
     }
 }
 
