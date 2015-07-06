@@ -21,14 +21,14 @@ impl<'a> ItemTable<'a> {
     pub fn predict(&mut self, char_index: usize, token: &str) {
         for (rule_index, rule) in self.grammar.rules.iter().enumerate() {
             if rule.name == token {
-                self.push("predicting", char_index, Item::new(rule_index, char_index));
+                self.push("predicting  ", char_index, Item::new(rule_index, char_index));
             }
         }
     }
 
     pub fn scan(&mut self, item: Item, char_index: usize, current_char: &str, token: &str) {
         if token == current_char {
-            self.push("scanning", char_index + 1, item.advance());
+            self.push("scanning    ", char_index + 1, item.advance());
         }
     }
 
@@ -36,7 +36,7 @@ impl<'a> ItemTable<'a> {
         for old_item in self.table[item.start].clone() {
             if let Some(&NonTerminal(token)) = self.grammar.rules[old_item.rule].tokens.get(old_item.next) {
                 if token == self.grammar.rules[item.rule].name {
-                    self.push("completing", char_index, old_item.advance());
+                    self.push("completing  ", char_index, old_item.advance());
                 }
             }
         }
@@ -45,7 +45,7 @@ impl<'a> ItemTable<'a> {
     fn push(&mut self, operation: &str, index: usize, item: Item) {
         if let Some(mut items) = self.table.get_mut(index) {
             if !items.contains(&item) {
-                debug!("|- {} :: {}", operation, item.render(self.grammar));
+                debug!("\x1b[30;1m|- {} ::        {}\x1b[39;49m", operation, item.render(self.grammar));
                 items.push(item);
             }
         }
