@@ -13,9 +13,7 @@ fn main() {
 
     let grammar = Grammar { starting_rule: "A", rules: rules };
 
-    let result1 = matching_items(&build_items(&grammar, "a"));
-    //let result2 = matching_items(&build_items(&grammar, "a-"));
+    let result1 = grammar.build_table("a").matching_items();
 
     println!("{:?}", result1);
-    //println!("{:?}", result2);
 }

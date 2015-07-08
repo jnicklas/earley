@@ -4,7 +4,7 @@ extern crate test;
 extern crate earley;
 extern crate env_logger;
 
-use earley::{Rule, Grammar, Terminal, NonTerminal, build_items, matching_items};
+use earley::{Rule, Grammar, Terminal, NonTerminal};
 
 fn main() {
     env_logger::init().unwrap();
@@ -28,9 +28,9 @@ fn main() {
 
     let input = "1*2+((1+2)*3)+2+2*4";
 
-    for _i in 0..3000000 {
-        let items = build_items(&grammar, input);
-        let result = matching_items(&items);
+    for _i in 0..3000 {
+        let table = grammar.build_table(input);
+        let result = table.matching_items();
         test::black_box(result);
     }
 
