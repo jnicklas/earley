@@ -45,7 +45,7 @@ impl<'a> ItemTable<'a> {
     fn push(&mut self, operation: &str, index: usize, item: Item) {
         if let Some(mut items) = self.table.get_mut(index) {
             if !items.contains(&item) {
-                debug!("\x1b[30;1m|- {} ::        {}\x1b[39;49m", operation, item.render(self.grammar));
+                debug!("{} ::        {}", operation, item.render(self.grammar));
                 items.push(item);
             }
         }
