@@ -1,7 +1,7 @@
 extern crate earley;
 extern crate env_logger;
 
-use earley::{Rule, Grammar, Terminal, NonTerminal, build_items, matching_items};
+use earley::{Rule, Grammar, Terminal, NonTerminal};
 
 fn main() {
     env_logger::init().unwrap();
@@ -24,8 +24,8 @@ fn main() {
     };
 
     let input = "1*2";
-    let items = build_items(&grammar, input);
-    let result = matching_items(&items);
+    let items = grammar.build_table(input);
+    let result = items.matching_items();
 
     println!("--------------------");
     for (index, item) in items.table.iter().enumerate() {
