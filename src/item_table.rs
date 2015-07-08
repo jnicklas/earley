@@ -1,3 +1,4 @@
+use std::iter::repeat;
 use item::Item;
 use grammar::Grammar;
 use token::NonTerminal;
@@ -9,7 +10,8 @@ pub struct ItemTable<'a> {
 
 impl<'a> ItemTable<'a> {
     pub fn new(grammar: &Grammar, length: usize) -> ItemTable {
-        let mut s = ItemTable { grammar: grammar, table: vec![vec![]; length + 1] };
+        let table = repeat(0u8).map(|_| Vec::with_capacity(100)).take(length + 1).collect();
+        let mut s = ItemTable { grammar: grammar, table: table };
 
         for (rule_index, _) in grammar.rules.iter().filter(|r| r.name == grammar.starting_rule).enumerate() {
             s.push("initializing", 0, Item::new(rule_index, 0))
