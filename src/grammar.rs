@@ -6,7 +6,7 @@ pub struct Grammar {
     pub rules: Vec<Rule>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Rule {
     pub name: &'static str,
     pub tokens: Vec<Token>,

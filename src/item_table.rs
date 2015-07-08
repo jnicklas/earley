@@ -4,7 +4,7 @@ use grammar::Grammar;
 use token::NonTerminal;
 
 pub struct ItemTable<'a> {
-    pub table: Vec<Vec<Item>>,
+    pub table: Vec<Vec<Item<'a>>>,
     pub grammar: &'a Grammar,
 }
 
@@ -13,41 +13,41 @@ impl<'a> ItemTable<'a> {
         let table = repeat(0u8).map(|_| Vec::with_capacity(100)).take(length + 1).collect();
         let mut s = ItemTable { grammar: grammar, table: table };
 
-        for (rule_index, _) in grammar.rules.iter().filter(|r| r.name == grammar.starting_rule).enumerate() {
-            s.push("initializing", 0, Item::new(rule_index, 0))
+        for rule in grammar.rules.iter().filter(|r| r.name == grammar.starting_rule) {
+            s.push("initializing", 0, Item::new(rule, 0))
         }
 
         return s;
     }
 
     pub fn predict(&mut self, char_index: usize, token: &str) {
-        for (rule_index, rule) in self.grammar.rules.iter().enumerate() {
+        for rule in &self.grammar.rules {
             if rule.name == token {
-                self.push("predicting  ", char_index, Item::new(rule_index, char_index));
+                self.push("predicting  ", char_index, Item::new(rule, char_index));
             }
         }
     }
 
-    pub fn scan(&mut self, item: Item, char_index: usize, current_char: &str, token: &str) {
+    pub fn scan(&mut self, item: Item<'a>, char_index: usize, current_char: &str, token: &str) {
         if token == current_char {
             self.push("scanning    ", char_index + 1, item.advance());
         }
     }
 
-    pub fn complete(&mut self, item: Item, char_index: usize) {
+    pub fn complete(&mut self, item: Item<'a>, char_index: usize) {
         for old_item in self.table[item.start].clone() {
-            if let Some(&NonTerminal(token)) = self.grammar.rules[old_item.rule].tokens.get(old_item.next) {
-                if token == self.grammar.rules[item.rule].name {
+            if let Some(&NonTerminal(token)) = old_item.next_token() {
+                if token == item.rule.name {
                     self.push("completing  ", char_index, old_item.advance());
                 }
             }
         }
     }
 
-    fn push(&mut self, operation: &str, index: usize, item: Item) {
+    fn push(&mut self, operation: &str, index: usize, item: Item<'a>) {
         if let Some(mut items) = self.table.get_mut(index) {
             if !items.contains(&item) {
-                debug!("{} ::        {}", operation, item.render(self.grammar));
+                debug!("{} ::        {}", operation, item);
                 items.push(item);
             }
         }

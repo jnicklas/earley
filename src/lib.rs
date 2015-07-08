@@ -24,9 +24,9 @@ pub fn build_items<'a>(grammar: &'a Grammar, input: &str) -> ItemTable<'a> {
         let mut item_index = 0;
         while item_index < s.table[char_index].len() {
             let item = s.table[char_index][item_index];
-            let next_item = grammar.rules[item.rule].tokens.get(item.next);
-            debug!("[{}, {}] :: {} || {:?}", char_index, item_index, item.render(&grammar), next_item);
-            match next_item {
+            let next_token = item.next_token();
+            debug!("[{}, {}] :: {} || {:?}", char_index, item_index, item, next_token);
+            match next_token {
                 Some(&NonTerminal(token)) => s.predict(char_index, token),
                 Some(&Terminal(token)) => s.scan(item, char_index, current_char, token),
                 None => s.complete(item, char_index),
@@ -38,11 +38,10 @@ pub fn build_items<'a>(grammar: &'a Grammar, input: &str) -> ItemTable<'a> {
     return s;
 }
 
-pub fn matching_items(s: &ItemTable) -> Vec<Item> {
+pub fn matching_items<'a>(s: &'a ItemTable) -> Vec<Item<'a>> {
     if let Some(items) = s.table.last() {
        items.iter().filter(|item| {
-           let rule = &s.grammar.rules[item.rule];
-           rule.name == s.grammar.starting_rule && item.next >= rule.tokens.len() && item.start == 0
+           item.rule.name == s.grammar.starting_rule && item.next >= item.rule.tokens.len() && item.start == 0
        }).map(Clone::clone).collect()
     } else {
         Vec::new()
