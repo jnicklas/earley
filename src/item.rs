@@ -21,6 +21,10 @@ impl<'a> Item<'a> {
     pub fn next_token(&self) -> Option<&Token> {
         self.rule.tokens.get(self.next)
     }
+
+    pub fn is_complete(&self) -> bool {
+        self.next >= self.rule.tokens.len()
+    }
 }
 
 impl<'a> fmt::Display for Item<'a> {

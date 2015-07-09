@@ -47,7 +47,7 @@ impl<'a> ItemTable<'a> {
     pub fn matching_items(&self) -> Vec<Item<'a>> {
         if let Some(items) = self.table.last() {
            items.iter().filter(|item| {
-               item.rule.name == self.grammar.starting_rule && item.next >= item.rule.tokens.len() && item.start == 0
+               item.rule.name == self.grammar.starting_rule && item.is_complete() && item.start == 0
            }).map(Clone::clone).collect()
         } else {
             Vec::new()
