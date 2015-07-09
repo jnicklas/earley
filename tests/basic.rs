@@ -23,11 +23,11 @@ fn test_basic() {
     let grammar = grammar();
 
     let input = "1*2";
-    let items = build_items(&grammar, input);
-    let result = matching_items(&items);
+    let table = grammar.build_table(input);
+    let result = table.matching_items();
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].rule, 1);
+    assert_eq!(*result[0].rule, grammar.rules[1]);
     assert_eq!(result[0].start, 0);
     assert_eq!(result[0].next, 1);
 }
