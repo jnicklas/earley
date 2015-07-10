@@ -9,7 +9,7 @@ pub struct Grammar {
 }
 
 impl Grammar {
-    pub fn build_table(&self, input: &str) -> ItemTable {
+    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a> {
         let mut s = ItemTable::new(self, input.len());
 
         let chars = UnicodeSegmentation::graphemes(input, true).chain(Some("\0").into_iter());

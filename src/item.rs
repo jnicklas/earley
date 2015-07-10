@@ -3,19 +3,31 @@ use token::Token;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Operation<'a> {
+    Scan(&'a str),
+    Predict,
+    Complete,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Item<'a> {
+    pub operation: Operation<'a>,
     pub rule: &'a Rule,
     pub start: usize,
     pub next: usize,
 }
 
 impl<'a> Item<'a> {
-    pub fn new(rule: &Rule, start: usize) -> Item {
-        Item { rule: rule, next: 0, start: start }
+    pub fn predict(rule: &'a Rule, start: usize) -> Item<'a> {
+        Item { operation: Operation::Predict, rule: rule, next: 0, start: start }
     }
 
-    pub fn advance(&self) -> Item<'a> {
-        Item { rule: self.rule, next: self.next + 1, start: self.start }
+    pub fn scan(&self, value: &'a str) -> Item<'a> {
+        Item { operation: Operation::Scan(value), rule: self.rule, next: self.next + 1, start: self.start }
+    }
+
+    pub fn complete(&self) -> Item<'a> {
+        Item { operation: Operation::Complete, rule: self.rule, next: self.next + 1, start: self.start }
     }
 
     pub fn next_token(&self) -> Option<&Token> {
