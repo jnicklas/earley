@@ -32,6 +32,20 @@ fn test_basic() {
     assert_eq!(result[0].next, 1);
 }
 
+#[test]
+fn test_owned_string() {
+    let grammar = grammar();
+
+    let input = format!("{}*{}", 1, 2);
+    let table = grammar.build_table(&input);
+    let result = table.matching_items();
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(*result[0].rule, grammar.rules[1]);
+    assert_eq!(result[0].start, 0);
+    assert_eq!(result[0].next, 1);
+}
+
 // #[test]
 // fn test_empty_rules() {
 //     let rules = vec![
