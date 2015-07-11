@@ -1,7 +1,7 @@
 extern crate earley;
 extern crate env_logger;
 
-use earley::{Rule, Grammar, Terminal, NonTerminal};
+use earley::{Rule, Grammar, Terminal, NonTerminal, parse};
 
 fn main() {
     env_logger::init().unwrap();
@@ -23,14 +23,15 @@ fn main() {
         rules: rules,
     };
 
-    let input = "1*2";
+    let input = "1+(2*3+2)";
     let items = grammar.build_table(input);
-    let result = items.matching_items();
+    // let result = items.matching_items();
 
+    // println!("--------------------");
+    // for (index, item) in items.table.iter().enumerate() {
+    //     println!("{}: {:?}", index, item);
+    // }
+    let node = parse(&items);
     println!("--------------------");
-    for (index, item) in items.table.iter().enumerate() {
-        println!("{}: {:?}", index, item);
-    }
-    println!("--------------------");
-    println!("{:?}", result);
+    println!("{}", node.unwrap());
 }
