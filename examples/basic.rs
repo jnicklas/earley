@@ -25,12 +25,20 @@ fn main() {
 
     let input = "1+(2*3+2)";
     let items = grammar.build_table(input);
-    // let result = items.matching_items();
 
-    // println!("--------------------");
-    // for (index, item) in items.table.iter().enumerate() {
-    //     println!("{}: {:?}", index, item);
-    // }
+    let result = items.matching_items();
+
+    println!("--------------------");
+    for (index, items) in items.table.iter().enumerate() {
+        println!("===== {} =====", index);
+        for item in items {
+            if item.is_complete() {
+                println!("{}", item);
+            }
+        }
+
+    }
+    println!("--------------------");
     let node = parse(&items);
     println!("--------------------");
     println!("{}", node.unwrap());
