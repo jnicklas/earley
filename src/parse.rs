@@ -50,6 +50,8 @@ fn find_edges<'a>(s: &'a ItemTable, mut set: usize, item: Item<'a>) -> Node<'a> 
         }
     }).collect::<Vec<_>>();
 
+    node.children.reverse();
+
     node
 }
 
