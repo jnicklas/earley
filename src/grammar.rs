@@ -9,6 +9,10 @@ pub struct Grammar {
 }
 
 impl Grammar {
+    pub fn new(starting_rule: &'static str, rules: &[Rule]) -> Grammar {
+        Grammar { starting_rule: starting_rule, rules: rules.iter().cloned().collect() }
+    }
+
     pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a> {
         let mut s = ItemTable::new(self, input.len());
 
@@ -34,8 +38,14 @@ impl Grammar {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Rule {
     pub name: &'static str,
     pub tokens: Vec<Token>,
+}
+
+impl Rule {
+    pub fn new(name: &'static str, tokens: &[Token]) -> Rule {
+        Rule { name: name, tokens: tokens.iter().cloned().collect() }
+    }
 }
