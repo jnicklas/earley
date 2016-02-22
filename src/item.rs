@@ -47,7 +47,7 @@ impl<'a> fmt::Display for Item<'a> {
         } else {
             tokens.push("*".to_string());
         }
-        format!("{} -> {} ({})", self.rule.name, tokens.connect(" "), self.start).fmt(f)
+        format!("{} -> {} ({})", self.rule.name, tokens.join(" "), self.start).fmt(f)
     }
 }
 
