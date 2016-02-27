@@ -7,26 +7,21 @@ fn main() {
     env_logger::init().unwrap();
 
     let rules = vec![
-        Rule { name: "Sum", tokens: vec![NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")] },
-        Rule { name: "Sum", tokens: vec![NonTerminal("Product")] },
-        Rule { name: "Product", tokens: vec![NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")] },
-        Rule { name: "Product", tokens: vec![NonTerminal("Factor")] },
-        Rule { name: "Factor", tokens: vec![Terminal("("), NonTerminal("Sum"), Terminal(")")] },
-        Rule { name: "Factor", tokens: vec![NonTerminal("Number")] },
-        Rule { name: "Number", tokens: vec![Terminal("1")] },
-        Rule { name: "Number", tokens: vec![Terminal("2")] },
-        Rule { name: "Number", tokens: vec![Terminal("3")] },
+        Rule::new("Sum", &[NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")]),
+        Rule::new("Sum", &[NonTerminal("Product")]),
+        Rule::new("Product", &[NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")]),
+        Rule::new("Product", &[NonTerminal("Factor")]),
+        Rule::new("Factor", &[Terminal("("), NonTerminal("Sum"), Terminal(")")]),
+        Rule::new("Factor", &[NonTerminal("Number")]),
+        Rule::new("Number", &[Terminal("1")]),
+        Rule::new("Number", &[Terminal("2")]),
+        Rule::new("Number", &[Terminal("3")]),
     ];
 
-    let grammar = Grammar {
-        starting_rule: "Sum",
-        rules: rules,
-    };
+    let grammar = Grammar::new("Sum", &rules);
 
     let input = "1+(2*3+2)";
     let items = grammar.build_table(input);
-
-    let result = items.matching_items();
 
     println!("--------------------");
     for (index, items) in items.table.iter().enumerate() {

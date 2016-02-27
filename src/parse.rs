@@ -26,11 +26,11 @@ impl<'a> fmt::Display for Node<'a> {
 fn find_edges<'a>(s: &'a ItemTable, mut set: usize, item: Item<'a>) -> Node<'a> {
     let mut node = Node { item: item, children: vec![] };
 
-    node.children = item.rule.tokens.iter().rev().map(|token| {
+    node.children = item.production.tokens.iter().rev().map(|token| {
         match token {
             &Terminal(value) => {
                 let next_item = s.table[set].iter().cloned().filter(|i| {
-                    i.rule == item.rule && i.operation == Operation::Scan(value)
+                    i.production == item.production && i.operation == Operation::Scan(value)
                 }).nth(0).unwrap();
 
                 set -= 1;
@@ -39,7 +39,7 @@ fn find_edges<'a>(s: &'a ItemTable, mut set: usize, item: Item<'a>) -> Node<'a> 
             },
             &NonTerminal(name) => {
                 let next_item = s.table[set].iter().cloned().filter(|i| {
-                    i.is_complete() && i.rule.name == name
+                    i.is_complete() && i.production.name == name
                 }).nth(0).unwrap();
 
                 let node = find_edges(s, set, next_item);

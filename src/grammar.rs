@@ -1,16 +1,40 @@
 use token::{Token, Terminal, NonTerminal};
 use item_table::ItemTable;
 use unicode_segmentation::UnicodeSegmentation;
+use nullability::mark_nullable;
+use std::collections::BTreeMap;
 
 #[derive(Debug)]
 pub struct Grammar {
     pub starting_rule: &'static str,
-    pub rules: Vec<Rule>,
+    pub rules: BTreeMap<&'static str, Rule>,
 }
 
 impl Grammar {
-    pub fn new(starting_rule: &'static str, rules: &[Rule]) -> Grammar {
-        Grammar { starting_rule: starting_rule, rules: rules.iter().cloned().collect() }
+    pub fn new(productions: Vec<Production>) -> Grammar {
+        let mut grammar = {
+            let first_production = productions.get(0).expect("grammar must have at least one rule");
+
+            Grammar {
+                starting_rule: first_production.name,
+                rules: BTreeMap::new(),
+            }
+        };
+
+        for production in productions {
+            let rule = grammar.rules.entry(production.name).or_insert_with(|| Rule::new(production.name));
+            rule.add_production(production);
+        }
+
+        grammar
+    }
+
+    pub fn productions_for_starting_rule(&self) -> &[Production] {
+        &self.rules[self.starting_rule].productions
+    }
+
+    pub fn productions_for<'a, 'b>(&'a self, name: &'b str) -> &'a [Production] {
+        &self.rules[name].productions
     }
 
     pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a> {
@@ -39,13 +63,34 @@ impl Grammar {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Production {
+    pub name: &'static str,
+    pub tokens: Vec<Token>
+}
+
+impl Production {
+    pub fn new(name: &'static str, tokens: &[Token]) -> Self {
+        Production { name: name, tokens: tokens.iter().cloned().collect() }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Rule {
     pub name: &'static str,
-    pub tokens: Vec<Token>,
+    pub productions: Vec<Production>,
+    nullable: bool,
 }
 
 impl Rule {
-    pub fn new(name: &'static str, tokens: &[Token]) -> Rule {
-        Rule { name: name, tokens: tokens.iter().cloned().collect() }
+    pub fn new(name: &'static str) -> Rule {
+        Rule { name: name, productions: Vec::new(), nullable: false }
+    }
+
+    pub fn is_nullable(&self) -> bool {
+        self.nullable
+    }
+
+    fn add_production(&mut self, production: Production) {
+        self.productions.push(production);
     }
 }

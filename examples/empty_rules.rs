@@ -5,15 +5,27 @@ use earley::*;
 
 fn main() {
     let rules = vec![
-        Rule { name: "A", tokens: vec![Terminal("a"), NonTerminal("B")] },
-        Rule { name: "B", tokens: Vec::new() },
-        Rule { name: "B", tokens: vec![NonTerminal("C")] },
-        Rule { name: "C", tokens: vec![Terminal("-")] },
+        Rule::new("A", &[Terminal("a"), NonTerminal("B"), NonTerminal("C")]),
+        Rule::new("B", &[]),
+        Rule::new("B", &[Terminal("b")]),
+        Rule::new("C", &[Terminal("-")]),
     ];
 
-    let grammar = Grammar { starting_rule: "A", rules: rules };
+    let grammar = Grammar::new("A", &rules);
 
-    let result1 = grammar.build_table("a").matching_items();
+    let table = grammar.build_table("a-");
 
-    println!("{:?}", result1);
+    let items = table.matching_items();
+
+    println!("{}", table);
+    println!("\n-- Start item\n");
+    for item in &items {
+        println!("{}", item);
+    }
+
+    println!("\n-- Parse tree\n");
+
+    for node in parse(&table) {
+        println!("{}", node);
+    }
 }

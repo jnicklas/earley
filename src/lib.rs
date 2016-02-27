@@ -6,11 +6,12 @@ mod item;
 mod item_table;
 mod token;
 mod parse;
+mod nullability;
 
 pub use item::Item;
 pub use item_table::ItemTable;
 
 pub use token::{Token, Terminal, NonTerminal};
-pub use grammar::{Grammar, Rule};
+pub use grammar::{Grammar, Rule, Production};
 
 pub use parse::parse;
