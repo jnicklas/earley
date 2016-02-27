@@ -1,8 +1,8 @@
 use token::{Token, Terminal, NonTerminal};
 use item_table::ItemTable;
 use unicode_segmentation::UnicodeSegmentation;
-use nullability::mark_nullable;
 use std::collections::BTreeMap;
+use std::cell::Cell;
 
 #[derive(Debug)]
 pub struct Grammar {
@@ -25,6 +25,8 @@ impl Grammar {
             let rule = grammar.rules.entry(production.name).or_insert_with(|| Rule::new(production.name));
             rule.add_production(production);
         }
+
+        mark_nullable(&mut grammar);
 
         grammar
     }
@@ -78,19 +80,44 @@ impl Production {
 pub struct Rule {
     pub name: &'static str,
     pub productions: Vec<Production>,
-    nullable: bool,
+    nullable: Cell<bool>,
 }
 
 impl Rule {
     pub fn new(name: &'static str) -> Rule {
-        Rule { name: name, productions: Vec::new(), nullable: false }
+        Rule { name: name, productions: Vec::new(), nullable: Cell::new(false) }
     }
 
     pub fn is_nullable(&self) -> bool {
-        self.nullable
+        self.nullable.get()
     }
 
     fn add_production(&mut self, production: Production) {
         self.productions.push(production);
+    }
+}
+
+fn mark_nullable(grammar: &mut Grammar) {
+    loop {
+        let mut found_nullable_rule = false;
+        for (_, rule) in &grammar.rules {
+            if rule.is_nullable() {
+                continue;
+            } else {
+                let nullable = rule.productions.iter().any(|production| {
+                    production.tokens.len() == 0 || production.tokens.iter().all(|token| {
+                        match token {
+                            &Terminal(_) => false,
+                            &NonTerminal(name) => grammar.rules[name].is_nullable()
+                        }
+                    })
+                });
+                if nullable {
+                    rule.nullable.set(true);
+                    found_nullable_rule = true;
+                }
+            }
+        }
+        if !found_nullable_rule { break }
     }
 }

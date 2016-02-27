@@ -6,7 +6,6 @@ mod item;
 mod item_table;
 mod token;
 mod parse;
-mod nullability;
 
 pub use item::Item;
 pub use item_table::ItemTable;
