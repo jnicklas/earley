@@ -27,9 +27,10 @@ fn test_basic() {
     let result = table.matching_items();
 
     assert_eq!(result.len(), 1);
-    assert_eq!(*result[0].production, grammar.rules["Sum"].productions[1]);
-    assert_eq!(result[0].start, 0);
-    assert_eq!(result[0].next, 1);
+    assert_eq!(result[0].get_name(), "Sum");
+    assert_eq!(result[0].get_tokens(), &[NonTerminal("Product")]);
+    assert_eq!(result[0].get_start(), 0);
+    assert_eq!(result[0].get_next(), 1);
 }
 
 #[test]
@@ -41,9 +42,10 @@ fn test_owned_string() {
     let result = table.matching_items();
 
     assert_eq!(result.len(), 1);
-    assert_eq!(*result[0].production, grammar.rules["Sum"].productions[1]);
-    assert_eq!(result[0].start, 0);
-    assert_eq!(result[0].next, 1);
+    assert_eq!(result[0].get_name(), "Sum");
+    assert_eq!(result[0].get_tokens(), &[NonTerminal("Product")]);
+    assert_eq!(result[0].get_start(), 0);
+    assert_eq!(result[0].get_next(), 1);
 }
 
 #[test]

@@ -26,11 +26,11 @@ impl<'a> fmt::Display for Node<'a> {
 fn find_edges<'a>(s: &'a ItemTable, mut set: usize, item: Item<'a>) -> Node<'a> {
     let mut node = Node { item: item, children: vec![] };
 
-    node.children = item.production.tokens.iter().rev().map(|token| {
+    node.children = item.get_tokens().iter().rev().map(|token| {
         match token {
             &Terminal(value) => {
-                let next_item = s.table[set].iter().cloned().filter(|i| {
-                    i.production == item.production && i.operation == Operation::Scan(value)
+                let next_item = s.get_items_in_set(set).iter().cloned().filter(|i| {
+                    i.has_same_production(&item) && i.get_operation() == Operation::Scan(value)
                 }).nth(0).unwrap();
 
                 set -= 1;
@@ -38,12 +38,12 @@ fn find_edges<'a>(s: &'a ItemTable, mut set: usize, item: Item<'a>) -> Node<'a> 
                 Node { item: next_item, children: Vec::new() }
             },
             &NonTerminal(name) => {
-                let next_item = s.table[set].iter().cloned().filter(|i| {
-                    i.is_complete() && i.production.name == name
+                let next_item = s.get_items_in_set(set).iter().cloned().filter(|i| {
+                    i.is_complete() && i.get_name() == name
                 }).nth(0).unwrap();
 
                 let node = find_edges(s, set, next_item);
-                set = next_item.start;
+                set = next_item.get_start();
 
                 node
             }
@@ -57,7 +57,7 @@ fn find_edges<'a>(s: &'a ItemTable, mut set: usize, item: Item<'a>) -> Node<'a> 
 
 pub fn parse<'a>(s: &'a ItemTable) -> Option<Node<'a>> {
     match s.matching_items().into_iter().nth(0) {
-        Some(item) => Some(find_edges(s, s.table.len() - 1, item)),
+        Some(item) => Some(find_edges(s, s.get_input().len(), item)),
         None => None
     }
 }

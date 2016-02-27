@@ -5,13 +5,13 @@ use earley::*;
 
 fn main() {
     let rules = vec![
-        Rule::new("A", &[Terminal("a"), NonTerminal("B"), NonTerminal("C")]),
-        Rule::new("B", &[]),
-        Rule::new("B", &[Terminal("b")]),
-        Rule::new("C", &[Terminal("-")]),
+        Production::new("A", &[Terminal("a"), NonTerminal("B"), NonTerminal("C")]),
+        Production::new("B", &[]),
+        Production::new("B", &[Terminal("b")]),
+        Production::new("C", &[Terminal("-")]),
     ];
 
-    let grammar = Grammar::new("A", &rules);
+    let grammar = Grammar::new(rules);
 
     let table = grammar.build_table("a-");
 

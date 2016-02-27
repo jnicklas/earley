@@ -11,10 +11,10 @@ pub enum Operation<'a> {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Item<'a> {
-    pub operation: Operation<'a>,
-    pub production: &'a Production,
-    pub start: usize,
-    pub next: usize,
+    operation: Operation<'a>,
+    production: &'a Production,
+    start: usize,
+    next: usize,
 }
 
 impl<'a> Item<'a> {
@@ -30,23 +30,46 @@ impl<'a> Item<'a> {
         Item { operation: Operation::Complete, production: self.production, next: self.next + 1, start: self.start }
     }
     pub fn next_token(&self) -> Option<&Token> {
-        self.production.tokens.get(self.next)
+        self.production.get_tokens().get(self.next)
     }
 
     pub fn is_complete(&self) -> bool {
-        self.next >= self.production.tokens.len()
+        self.next >= self.production.get_tokens().len()
     }
 
+    pub fn has_same_production(&self, other: &Item) -> bool {
+        self.production == other.production
+    }
+
+    pub fn get_operation(&self) -> Operation {
+        self.operation
+    }
+
+    pub fn get_start(&self) -> usize {
+        self.start
+    }
+
+    pub fn get_next(&self) -> usize {
+        self.next
+    }
+
+    pub fn get_name(&self) -> &'static str {
+        self.production.get_name()
+    }
+
+    pub fn get_tokens(&self) -> &[Token] {
+        self.production.get_tokens()
+    }
 }
 
 impl<'a> fmt::Display for Item<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut tokens: Vec<String> = self.production.tokens.iter().map(|t| t.name()).collect();
+        let mut tokens: Vec<String> = self.production.get_tokens().iter().map(|t| t.name()).collect();
         if self.next < tokens.len() {
             tokens.insert(self.next, "*".to_string());
         } else {
             tokens.push("*".to_string());
         }
-        format!("{} -> {} ({})", self.production.name, tokens.join(" "), self.start).fmt(f)
+        format!("{} -> {} ({})", self.production.get_name(), tokens.join(" "), self.start).fmt(f)
     }
 }

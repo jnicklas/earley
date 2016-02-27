@@ -1,13 +1,12 @@
 use token::{Token, Terminal, NonTerminal};
 use item_table::ItemTable;
-use unicode_segmentation::UnicodeSegmentation;
 use std::collections::BTreeMap;
 use std::cell::Cell;
 
 #[derive(Debug)]
 pub struct Grammar {
-    pub starting_rule: &'static str,
-    pub rules: BTreeMap<&'static str, Rule>,
+    starting_rule: &'static str,
+    rules: BTreeMap<&'static str, Rule>,
 }
 
 impl Grammar {
@@ -30,11 +29,15 @@ impl Grammar {
         grammar
     }
 
+    pub fn get_starting_rule_name(&self) -> &'static str {
+        self.starting_rule
+    }
+
     pub fn get_rule(&self, name: &'static str) -> Option<&Rule> {
         self.rules.get(name)
     }
 
-    pub fn get_or_insert_rule_mut(&mut self, name: &'static str) -> &mut Rule {
+    fn get_or_insert_rule_mut(&mut self, name: &'static str) -> &mut Rule {
         self.rules.entry(name).or_insert_with(|| Rule::new(name))
     }
 
@@ -47,52 +50,34 @@ impl Grammar {
     }
 
     pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a> {
-        let mut s = ItemTable::new(self, input.len());
-
-        let chars = UnicodeSegmentation::graphemes(input, true).chain(Some("\0").into_iter());
-
-        for (char_index, current_char) in chars.enumerate() {
-            debug!("-----> {} matching {}", char_index, current_char);
-            let mut item_index = 0;
-            while item_index < s.table[char_index].len() {
-                let item = s.table[char_index][item_index];
-                let next_token = item.next_token();
-                debug!("[{}, {}] :: {} || {:?}", char_index, item_index, item, next_token);
-                match next_token {
-                    Some(&NonTerminal(token)) => s.predict(char_index, token),
-                    Some(&Terminal(token)) => s.scan(item, char_index, current_char, token),
-                    None => s.complete(item, char_index),
-                }
-                if let Some(&NonTerminal(token)) = next_token {
-                    if self.get_rule(token).unwrap().is_nullable() {
-                        debug!("[{}, {}] :: {} completing possibly nullable production", char_index, item_index, item);
-                        s.complete_nullable(item, char_index);
-                    }
-                }
-                item_index += 1;
-            }
-        }
-
-        return s;
+        ItemTable::build(self, input)
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Production {
-    pub name: &'static str,
-    pub tokens: Vec<Token>
+    name: &'static str,
+    tokens: Vec<Token>
 }
 
 impl Production {
     pub fn new(name: &'static str, tokens: &[Token]) -> Self {
         Production { name: name, tokens: tokens.iter().cloned().collect() }
     }
+
+    pub fn get_name(&self) -> &'static str {
+        &self.name
+    }
+
+    pub fn get_tokens(&self) -> &[Token] {
+        &self.tokens
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Rule {
-    pub name: &'static str,
-    pub productions: Vec<Production>,
+    name: &'static str,
+    productions: Vec<Production>,
     nullable: Cell<bool>,
 }
 
@@ -107,6 +92,14 @@ impl Rule {
 
     fn add_production(&mut self, production: Production) {
         self.productions.push(production);
+    }
+
+    pub fn get_name(&self) -> &'static str {
+        &self.name
+    }
+
+    pub fn get_productions(&self) -> &[Production] {
+        &self.productions
     }
 }
 
