@@ -22,13 +22,20 @@ impl Grammar {
         };
 
         for production in productions {
-            let rule = grammar.rules.entry(production.name).or_insert_with(|| Rule::new(production.name));
-            rule.add_production(production);
+            let rule = grammar.get_rule_mut(production.name).add_production(production);
         }
 
         mark_nullable(&mut grammar);
 
         grammar
+    }
+
+    pub fn get_rule(&mut self, name: &'static str) -> &Rule {
+        self.rules.entry(name).or_insert_with(|| Rule::new(name))
+    }
+
+    pub fn get_rule_mut(&mut self, name: &'static str) -> &mut Rule {
+        self.rules.entry(name).or_insert_with(|| Rule::new(name))
     }
 
     pub fn productions_for_starting_rule(&self) -> &[Production] {
