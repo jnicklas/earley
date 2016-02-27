@@ -64,7 +64,7 @@ impl<'a> Item<'a> {
 
 impl<'a> fmt::Display for Item<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut tokens: Vec<String> = self.production.get_tokens().iter().map(|t| t.name()).collect();
+        let mut tokens: Vec<String> = self.production.get_tokens().iter().map(|t| t.to_string()).collect();
         if self.next < tokens.len() {
             tokens.insert(self.next, "*".to_string());
         } else {

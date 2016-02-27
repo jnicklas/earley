@@ -14,7 +14,7 @@ impl<'a> fmt::Display for Node<'a> {
         try!(self.item.fmt(f));
         for child in &self.children {
             try!("\n".fmt(f));
-            for line in format!("{}", child).lines().map(|l| format!("|   {}", l)) {
+            for line in child.to_string().lines().map(|l| format!("|   {}", l)) {
                 try!(line.fmt(f));
                 try!("\n".fmt(f));
             }
