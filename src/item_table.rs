@@ -43,6 +43,10 @@ impl<'a> ItemTable<'a> {
         }
     }
 
+    pub fn complete_nullable(&mut self, item: Item<'a>, char_index: usize) {
+        self.push(char_index, item.complete());
+    }
+
     pub fn matching_items(&self) -> Vec<Item<'a>> {
         if let Some(items) = self.table.last() {
             items.iter().filter(|item| {

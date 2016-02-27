@@ -22,7 +22,7 @@ impl Grammar {
         };
 
         for production in productions {
-            let rule = grammar.get_rule_mut(production.name).add_production(production);
+            grammar.get_or_insert_rule_mut(production.name).add_production(production);
         }
 
         mark_nullable(&mut grammar);
@@ -30,11 +30,11 @@ impl Grammar {
         grammar
     }
 
-    pub fn get_rule(&mut self, name: &'static str) -> &Rule {
-        self.rules.entry(name).or_insert_with(|| Rule::new(name))
+    pub fn get_rule(&self, name: &'static str) -> Option<&Rule> {
+        self.rules.get(name)
     }
 
-    pub fn get_rule_mut(&mut self, name: &'static str) -> &mut Rule {
+    pub fn get_or_insert_rule_mut(&mut self, name: &'static str) -> &mut Rule {
         self.rules.entry(name).or_insert_with(|| Rule::new(name))
     }
 
@@ -62,6 +62,12 @@ impl Grammar {
                     Some(&NonTerminal(token)) => s.predict(char_index, token),
                     Some(&Terminal(token)) => s.scan(item, char_index, current_char, token),
                     None => s.complete(item, char_index),
+                }
+                if let Some(&NonTerminal(token)) = next_token {
+                    if self.get_rule(token).unwrap().is_nullable() {
+                        debug!("[{}, {}] :: {} completing possibly nullable production", char_index, item_index, item);
+                        s.complete_nullable(item, char_index);
+                    }
                 }
                 item_index += 1;
             }
