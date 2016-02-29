@@ -1,35 +1,35 @@
-use grammar::{Production};
+use grammar::{Production, Lexeme};
 use token::Token;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Operation<'a> {
-    Scan(&'a str),
+pub enum Operation<'a, I> where I: 'a {
+    Scan(&'a I),
     Predict,
     Complete,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Item<'a> {
-    operation: Operation<'a>,
-    production: &'a Production,
+pub struct Item<'a, T, I> where T: Lexeme + PartialEq<&'a I>, I: 'a {
+    operation: Operation<'a, I>,
+    production: &'a Production<T>,
     start: usize,
     next: usize,
 }
 
-impl<'a> Item<'a> {
-    pub fn predict(production: &'a Production, start: usize) -> Item<'a> {
+impl<'a, T, I> Item<'a, T, I> where T: Lexeme + PartialEq<&'a I>, I: 'a {
+    pub fn predict(production: &'a Production<T>, start: usize) -> Item<'a, T, I> {
         Item { operation: Operation::Predict, production: production, next: 0, start: start }
     }
 
-    pub fn scan(&self, value: &'a str) -> Item<'a> {
+    pub fn scan(&self, value: &'a I) -> Item<'a, T, I> {
         Item { operation: Operation::Scan(value), production: self.production, next: self.next + 1, start: self.start }
     }
 
-    pub fn complete(&self) -> Item<'a> {
+    pub fn complete(&self) -> Item<'a, T, I> {
         Item { operation: Operation::Complete, production: self.production, next: self.next + 1, start: self.start }
     }
-    pub fn next_token(&self) -> Option<&Token> {
+    pub fn next_token(&self) -> Option<&Token<T>> {
         self.production.get_tokens().get(self.next)
     }
 
@@ -37,11 +37,11 @@ impl<'a> Item<'a> {
         self.next >= self.production.get_tokens().len()
     }
 
-    pub fn has_same_production(&self, other: &Item) -> bool {
+    pub fn has_same_production(&self, other: &Item<T, I>) -> bool {
         self.production == other.production
     }
 
-    pub fn get_operation(&self) -> Operation {
+    pub fn get_operation(&self) -> Operation<I> {
         self.operation
     }
 
@@ -57,12 +57,12 @@ impl<'a> Item<'a> {
         self.production.get_name()
     }
 
-    pub fn get_tokens(&self) -> &[Token] {
+    pub fn get_tokens(&self) -> &[Token<T>] {
         self.production.get_tokens()
     }
 }
 
-impl<'a> fmt::Display for Item<'a> {
+impl<'a, T, I> fmt::Display for Item<'a, T, I> where T: fmt::Display + Lexeme + PartialEq<&'a I>, I: 'a + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut tokens: Vec<String> = self.production.get_tokens().iter().map(|t| t.to_string()).collect();
         if self.next < tokens.len() {
