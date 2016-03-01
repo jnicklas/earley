@@ -30,15 +30,15 @@ impl<'a> ItemTable<'a> {
                 let next_token = item.next_token();
                 debug!("[{}, {}] :: {} || {:?}", char_index, item_index, item, next_token);
                 match next_token {
-                    Some(&NonTerminal(token)) => s.predict(char_index, token),
+                    Some(&NonTerminal(token)) => {
+                        s.predict(char_index, token);
+                        if grammar.get_rule(token).unwrap().is_nullable() {
+                            debug!("[{}, {}] :: {} completing possibly nullable production", char_index, item_index, item);
+                            s.complete_nullable(item, char_index);
+                        }
+                    },
                     Some(&Terminal(token)) => s.scan(item, char_index, current_char, token),
                     None => s.complete(item, char_index),
-                }
-                if let Some(&NonTerminal(token)) = next_token {
-                    if grammar.get_rule(token).unwrap().is_nullable() {
-                        debug!("[{}, {}] :: {} completing possibly nullable production", char_index, item_index, item);
-                        s.complete_nullable(item, char_index);
-                    }
                 }
                 item_index += 1;
             }
