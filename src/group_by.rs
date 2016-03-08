@@ -25,7 +25,7 @@ impl<T, I> GroupByExt<I> for T where T: Iterator<Item=I> {
 fn test_group_by() {
     let map: BTreeMap<u32, Vec<u32>> = (1..7).group_by(|i| i%3).collect();
 
-    assert_eq!(map[0], vec![3, 6]);
-    assert_eq!(map[1], vec![1, 4]);
-    assert_eq!(map[2], vec![2, 5]);
+    assert_eq!(map[&0], vec![3, 6]);
+    assert_eq!(map[&1], vec![1, 4]);
+    assert_eq!(map[&2], vec![2, 5]);
 }
