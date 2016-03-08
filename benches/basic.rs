@@ -1,24 +1,26 @@
 #![feature(test)]
 
-extern crate test;
+#[macro_use]
 extern crate earley;
+
+extern crate test;
 
 use earley::*;
 
-fn grammar() -> Grammar {
-    let rules = vec![
-        Rule { name: "Sum", tokens: vec![NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")] },
-        Rule { name: "Sum", tokens: vec![NonTerminal("Product")] },
-        Rule { name: "Product", tokens: vec![NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")] },
-        Rule { name: "Product", tokens: vec![NonTerminal("Factor")] },
-        Rule { name: "Factor", tokens: vec![Terminal("("), NonTerminal("Sum"), Terminal(")")] },
-        Rule { name: "Factor", tokens: vec![NonTerminal("Number")] },
-        Rule { name: "Number", tokens: vec![Terminal("1")] },
-        Rule { name: "Number", tokens: vec![Terminal("2")] },
-        Rule { name: "Number", tokens: vec![Terminal("3")] },
+fn grammar() -> Grammar<u32> {
+    let productions: Vec<Box<Production<u32>>> = vec![
+        earley_production!("Sum" => [{"Sum"}, ["+"], {"Product"}]         (result: u32) { result[0].get() + result[2].get() }),
+        earley_production!("Sum" => [{"Product"}]                         (result: u32) { result[0].get() }),
+        earley_production!("Product" => [{"Product"}, ["*"], {"Factor"}]  (result: u32) { result[0].get() * result[2].get() }),
+        earley_production!("Product" => [{"Factor"}]                      (result: u32) { result[0].get() }),
+        earley_production!("Factor" => [["("], {"Sum"}, [")"]]            (result: u32) { result[1].get() }),
+        earley_production!("Factor" => [{"Number"}]                       (result: u32) { result[0].get() }),
+        earley_production!("Number" => [["1"]]                            (result: u32) { 1 }),
+        earley_production!("Number" => [["2"]]                            (result: u32) { 2 }),
+        earley_production!("Number" => [["3"]]                            (result: u32) { 3 }),
     ];
 
-    Grammar { starting_rule: "Sum", rules: rules }
+    Grammar::new(productions)
 }
 
 #[bench]
@@ -28,8 +30,7 @@ fn bench_basic(b: &mut ::test::Bencher) {
     let input = "1*2";
 
     b.iter(|| {
-        let items = build_items(&grammar, input);
-        matching_items(&items);
+        grammar.parse(input)
     })
 }
 
@@ -40,7 +41,6 @@ fn bench_long_input(b: &mut ::test::Bencher) {
     let input = "1*2+((1+2)*3)+2+2*4";
 
     b.iter(|| {
-        let items = build_items(&grammar, input);
-        matching_items(&items);
+        grammar.parse(input)
     })
 }
