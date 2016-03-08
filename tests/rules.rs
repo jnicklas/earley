@@ -1,18 +1,19 @@
+#[macro_use]
 extern crate earley;
 
 use earley::*;
 
-fn grammar() -> Grammar {
-    let rules = vec![
-        Production::new("A", &[Terminal("a")]),
-        Production::new("A", &[NonTerminal("B")]),
-        Production::new("C", &[Terminal("c")]),
-        Production::new("B", &[NonTerminal("C")]),
-        Production::new("C", &[Terminal("d")]),
-        Production::new("C", &[Terminal("e")]),
+fn grammar() -> Grammar<u32> {
+    let productions: Vec<Box<Production<u32>>> = vec![
+        earley_production!("A" => [["a"]] (result: u32) { 1 }),
+        earley_production!("A" => [{"B"}] (result: u32) { 1 }),
+        earley_production!("C" => [["c"]] (result: u32) { 1 }),
+        earley_production!("B" => [{"C"}] (result: u32) { 1 }),
+        earley_production!("C" => [["d"]] (result: u32) { 1 }),
+        earley_production!("C" => [["e"]] (result: u32) { 1 }),
     ];
 
-    Grammar::new(rules)
+    Grammar::new(productions)
 }
 
 #[test]
