@@ -10,19 +10,19 @@ macro_rules! earley_production {
     ($name:expr => [$($token:tt),*] ($varname:ident: $vartype:ty) $action:block) => {
         {
             #[derive(Debug, Clone, Eq, PartialEq)]
-            struct A([Token; earley_count_exprs!($($token),*)]);
+            struct A([$crate::Token; earley_count_exprs!($($token),*)]);
 
             impl $crate::Production<$vartype> for A {
                 fn get_name(&self) -> &'static str {
                     $name
                 }
 
-                fn get_tokens(&self) -> &[Token] {
+                fn get_tokens(&self) -> &[$crate::Token] {
                     &self.0
                 }
 
                 #[allow(unused_variables)]
-                fn perform<'a>(&self, result: &'a [Node<'a, $vartype>]) -> $vartype {
+                fn perform<'a>(&self, result: &'a [$crate::Node<'a, $vartype>]) -> $vartype {
                     let $varname = result;
                     $action
                 }

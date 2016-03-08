@@ -10,10 +10,7 @@ mod token;
 mod parse;
 mod group_by;
 
-pub use item::Item;
-pub use item_table::ItemTable;
-
 pub use token::{Token, Terminal, NonTerminal};
 pub use grammar::{Grammar, Rule, Production};
 
-pub use parse::{Node, parse};
+pub use parse::{Node};

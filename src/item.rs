@@ -70,10 +70,6 @@ impl<'a, T> Item<'a, T> where T: 'a {
         self.start
     }
 
-    pub fn get_next(&self) -> usize {
-        self.next
-    }
-
     pub fn get_name(&self) -> &'static str {
         self.production.get_name()
     }
