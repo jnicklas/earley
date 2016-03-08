@@ -7,7 +7,7 @@ macro_rules! earley_count_exprs {
 
 #[macro_export]
 macro_rules! earley_production {
-    ($name:expr => $($token:tt),*; ($varname:ident: $vartype:ty) $action:block) => {
+    ($name:expr => [$($token:tt),*] ($varname:ident: $vartype:ty) $action:block) => {
         {
             #[derive(Debug, Clone, Eq, PartialEq)]
             struct A([Token; earley_count_exprs!($($token),*)]);
