@@ -5,15 +5,15 @@ use earley::*;
 
 fn grammar() -> Grammar<u32> {
     let productions: Vec<Box<Production<u32>>> = vec![
-        earley_production!("A" => [{"B"}, {"C"}, {"D"}] (result: u32) { 1 }),
-        earley_production!("B" => [] (result: u32) { 1 }),
-        earley_production!("B" => [["a"]] (result: u32) { 1 }),
-        earley_production!("C" => [{"B"}] (result: u32) { 1 }),
-        earley_production!("C" => [["c"]] (result: u32) { 1 }),
-        earley_production!("D" => [["d"]] (result: u32) { 1 }),
-        earley_production!("D" => [{"E"}] (result: u32) { 1 }),
-        earley_production!("E" => [{"F"}] (result: u32) { 1 }),
-        earley_production!("F" => [["f"]] (result: u32) { 1 }),
+        earley_production!("A" => [{"B"}, {"C"}, {"D"}] (_result) -> u32; { 1 }),
+        earley_production!("B" => [] (_result) -> u32; { 1 }),
+        earley_production!("B" => [["a"]] (_result) -> u32; { 1 }),
+        earley_production!("C" => [{"B"}] (_result) -> u32; { 1 }),
+        earley_production!("C" => [["c"]] (_result) -> u32; { 1 }),
+        earley_production!("D" => [["d"]] (_result) -> u32; { 1 }),
+        earley_production!("D" => [{"E"}] (_result) -> u32; { 1 }),
+        earley_production!("E" => [{"F"}] (_result) -> u32; { 1 }),
+        earley_production!("F" => [["f"]] (_result) -> u32; { 1 }),
     ];
 
     Grammar::new(productions)

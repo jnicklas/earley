@@ -1,7 +1,7 @@
 use grammar::Production;
 use token::Token;
 use std::fmt;
-use parse::Node;
+use parse::Value;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operation<'a> {
@@ -66,6 +66,13 @@ impl<'a, T> Item<'a, T> where T: 'a {
         self.operation
     }
 
+    pub fn get_scanned_value(&self) -> Option<&'a str> {
+        match self.operation {
+            Operation::Scan(value) => Some(value),
+            _ => None
+        }
+    }
+
     pub fn get_start(&self) -> usize {
         self.start
     }
@@ -78,7 +85,7 @@ impl<'a, T> Item<'a, T> where T: 'a {
         self.production.get_tokens()
     }
 
-    pub fn perform(&self, result: &'a [Node<'a, T>]) -> T {
+    pub fn perform(&self, result: Vec<Value<'a, T>>) -> T {
         self.production.perform(result)
     }
 }

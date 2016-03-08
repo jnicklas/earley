@@ -1,12 +1,12 @@
 use token::Token;
-use parse::Node;
+use parse::Value;
 
 pub trait Production<T> {
     fn get_name(&self) -> &'static str;
 
     fn get_tokens(&self) -> &[Token];
 
-    fn perform<'a>(&self, result: &'a [Node<'a, T>]) -> T;
+    fn perform<'a>(&self, result: Vec<Value<'a, T>>) -> T;
 }
 
 impl<'a, T> PartialEq for &'a Production<T> {

@@ -7,7 +7,7 @@ macro_rules! earley_count_exprs {
 
 #[macro_export]
 macro_rules! earley_production {
-    ($name:expr => [$($token:tt),*] ($varname:ident: $vartype:ty) $action:block) => {
+    ($name:expr => [$($token:tt),*] ($($varname:pat),*) -> $vartype:ty; $action:block) => {
         {
             #[derive(Debug, Clone, Eq, PartialEq)]
             struct A([$crate::Token; earley_count_exprs!($($token),*)]);
@@ -21,9 +21,13 @@ macro_rules! earley_production {
                     &self.0
                 }
 
-                #[allow(unused_variables)]
-                fn perform<'a>(&self, result: &'a [$crate::Node<'a, $vartype>]) -> $vartype {
-                    let $varname = result;
+                #[allow(unused_variables, unused_mut)]
+                fn perform<'a>(&self, result: Vec<$crate::Value<'a, $vartype>>) -> $vartype {
+                    println!("{:?}", result);
+                    let mut iterator = result.into_iter();
+                    $(
+                        let $varname = iterator.next().expect("must perform action with same number of arguments as tokens");
+                    )*
                     $action
                 }
             }

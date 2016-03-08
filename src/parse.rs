@@ -1,47 +1,31 @@
 use item::{Item, Operation};
 use item_table::ItemTable;
 use token::{Terminal, NonTerminal};
-use std::fmt;
 
-pub struct Node<'a, T> where T: 'a {
-    item: Item<'a, T>,
-    children: Vec<Node<'a, T>>
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Value<'a, T> {
+    Terminal(&'a str),
+    NonTerminal(T),
 }
 
-impl<'a, T> Node<'a, T> where T: 'a {
-    pub fn get(&self) -> T {
-        if self.children.len() == 0 {
-            panic!("cannot call `get()` on terminal nodes");
-        }
-        self.item.perform(&self.children)
-    }
-
-    pub fn value(&'a self) -> &'a str {
-        match self.item.get_operation() {
-            Operation::Scan(value) => value,
-            _ => panic!("can't get value if it wasn't a scan")
+impl<'a, T> Value<'a, T> where T: 'a {
+    pub fn get(self) -> T {
+        match self {
+            Value::Terminal(_) => panic!("cannot call `get()` on terminal nodes"),
+            Value::NonTerminal(value) => value,
         }
     }
-}
 
-impl<'a, T> fmt::Display for Node<'a, T> where T: 'a {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(self.item.fmt(f));
-        for child in &self.children {
-            try!("\n".fmt(f));
-            for line in child.to_string().lines().map(|l| format!("|   {}", l)) {
-                try!(line.fmt(f));
-                try!("\n".fmt(f));
-            }
+    pub fn value(self) -> &'a str {
+        match self {
+            Value::Terminal(value) => value,
+            Value::NonTerminal(_) => panic!("cannot call `value()` on non-terminal nodes"),
         }
-        Ok(())
     }
 }
 
-fn find_edges<'a, T>(s: &'a ItemTable<'a, T>, mut set: usize, item: Item<'a, T>) -> Node<'a, T> where T: 'a {
-    let mut node = Node { item: item.clone(), children: vec![] };
-
-    node.children = item.get_tokens().iter().rev().map(|token| {
+fn find_edges<'a, T>(s: &'a ItemTable<'a, T>, mut set: usize, item: Item<'a, T>) -> T where T: 'a {
+    let mut children = item.get_tokens().iter().rev().map(|token| {
         match token {
             &Terminal(value) => {
                 let next_item = s.get_items_in_set(set).iter().cloned().filter(|i| {
@@ -50,29 +34,36 @@ fn find_edges<'a, T>(s: &'a ItemTable<'a, T>, mut set: usize, item: Item<'a, T>)
 
                 set -= 1;
 
-                Node { item: next_item.clone(), children: Vec::new() }
+                println!("-- {}", next_item);
+
+                Value::Terminal(next_item.get_scanned_value().unwrap())
             },
             &NonTerminal(name) => {
                 let next_item = s.get_items_in_set(set).iter().cloned().filter(|i| {
                     i.is_complete() && i.get_name() == name
                 }).nth(0).unwrap();
 
-                let node = find_edges(s, set, next_item.clone());
+                let value = find_edges(s, set, next_item.clone());
+
                 set = next_item.get_start();
 
-                node
+                println!("++ {}", next_item);
+
+                Value::NonTerminal(value)
             }
         }
     }).collect::<Vec<_>>();
 
-    node.children.reverse();
+    children.reverse();
 
-    node
+    item.perform(children)
 }
 
 pub fn parse<'a, T>(s: &'a ItemTable<T>) -> Option<T> where T: 'a {
     match s.matching_items().into_iter().nth(0) {
-        Some(item) => Some(find_edges(s, s.get_input().len(), item).get()),
+        Some(item) => {
+            Some(find_edges(s, s.get_input().len(), item.clone()))
+        },
         None => None
     }
 }
