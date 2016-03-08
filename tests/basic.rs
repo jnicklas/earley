@@ -1,18 +1,19 @@
+#[macro_use]
 extern crate earley;
 
 use earley::*;
 
-fn grammar() -> Grammar {
-    let productions = vec![
-        Production::new("Sum", &[NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")]),
-        Production::new("Sum", &[NonTerminal("Product")]),
-        Production::new("Product", &[NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")]),
-        Production::new("Product", &[NonTerminal("Factor")]),
-        Production::new("Factor", &[Terminal("("), NonTerminal("Sum"), Terminal(")")]),
-        Production::new("Factor", &[NonTerminal("Number")]),
-        Production::new("Number", &[Terminal("1")]),
-        Production::new("Number", &[Terminal("2")]),
-        Production::new("Number", &[Terminal("3")]),
+fn grammar() -> Grammar<u32> {
+    let productions: Vec<Box<Production<u32>>> = vec![
+        earley_production!("Sum" => {"Sum"}, ["+"], {"Product"};         (result: u32) { result[0].get() + result[2].get() }),
+        earley_production!("Sum" => {"Product"};                         (result: u32) { result[0].get() }),
+        earley_production!("Product" => {"Product"}, ["*"], {"Factor"};  (result: u32) { result[0].get() * result[2].get() }),
+        earley_production!("Product" => {"Factor"};                      (result: u32) { result[0].get() }),
+        earley_production!("Factor" => ["("], {"Sum"}, [")"];            (result: u32) { result[1].get() }),
+        earley_production!("Factor" => {"Number"};                       (result: u32) { result[0].get() }),
+        earley_production!("Number" => ["1"];                            (result: u32) { 1 }),
+        earley_production!("Number" => ["2"];                            (result: u32) { 2 }),
+        earley_production!("Number" => ["3"];                            (result: u32) { 3 }),
     ];
 
     Grammar::new(productions)
@@ -22,46 +23,15 @@ fn grammar() -> Grammar {
 fn test_basic() {
     let grammar = grammar();
 
-    let input = "1*2";
-    let table = grammar.build_table(input);
-    let result = table.matching_items();
-
-    assert_eq!(result.len(), 1);
-    assert_eq!(result[0].get_name(), "Sum");
-    assert_eq!(result[0].get_tokens(), &[NonTerminal("Product")]);
-    assert_eq!(result[0].get_start(), 0);
-    assert_eq!(result[0].get_next(), 1);
+    assert_eq!(grammar.parse("1+2"), Some(3));
+    assert_eq!(grammar.parse("1+(3+2*3)"), Some(10));
 }
 
 #[test]
 fn test_owned_string() {
     let grammar = grammar();
 
-    let input = format!("{}*{}", 1, 2);
-    let table = grammar.build_table(&input);
-    let result = table.matching_items();
+    let input = format!("{}*{}", 3, 2);
 
-    assert_eq!(result.len(), 1);
-    assert_eq!(result[0].get_name(), "Sum");
-    assert_eq!(result[0].get_tokens(), &[NonTerminal("Product")]);
-    assert_eq!(result[0].get_start(), 0);
-    assert_eq!(result[0].get_next(), 1);
-}
-
-#[test]
-fn test_empty_rules() {
-    // A simple grammar proposed by Grune & Jacobs. This produces the string `x` but it is not but
-    // needs special consideration to be parsed by an Earley parser.
-    let productions = vec![
-        Production::new("S", &[NonTerminal("A"), NonTerminal("A"), Terminal("x")]),
-        Production::new("A", &[]),
-    ];
-
-    let grammar = Grammar::new(productions);
-
-    let input = "x";
-    if let Some(_node) = parse(&grammar.build_table(input)) {
-    } else {
-        panic!("unable to parse empty rule");
-    }
+    assert_eq!(grammar.parse(&input), Some(6))
 }
