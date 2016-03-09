@@ -26,7 +26,7 @@ macro_rules! earley_production {
                     println!("{:?}", result);
                     let mut iterator = result.into_iter();
                     $(
-                        let $varname = iterator.next().expect("must perform action with same number of arguments as tokens");
+                        let $varname = earley_expand_result!(iterator.next().unwrap(), $token);
                     )*
                     $action
                 }
@@ -34,6 +34,16 @@ macro_rules! earley_production {
 
             Box::new(A([$(earley_expand_token!($token)),*]))
         }
+    };
+}
+
+#[macro_export]
+macro_rules! earley_expand_result {
+    ($from:expr, [$name:expr]) => {
+        ($from).value()
+    };
+    ($from:expr, {$name:expr}) => {
+        ($from).get()
     };
 }
 

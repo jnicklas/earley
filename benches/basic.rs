@@ -9,15 +9,15 @@ use earley::*;
 
 fn grammar() -> Grammar<u32> {
     let productions: Vec<Box<Production<u32>>> = vec![
-        earley_production!("Sum" => [{"Sum"}, ["+"], {"Product"}]         (result: u32) { result[0].get() + result[2].get() }),
-        earley_production!("Sum" => [{"Product"}]                         (result: u32) { result[0].get() }),
-        earley_production!("Product" => [{"Product"}, ["*"], {"Factor"}]  (result: u32) { result[0].get() * result[2].get() }),
-        earley_production!("Product" => [{"Factor"}]                      (result: u32) { result[0].get() }),
-        earley_production!("Factor" => [["("], {"Sum"}, [")"]]            (result: u32) { result[1].get() }),
-        earley_production!("Factor" => [{"Number"}]                       (result: u32) { result[0].get() }),
-        earley_production!("Number" => [["1"]]                            (result: u32) { 1 }),
-        earley_production!("Number" => [["2"]]                            (result: u32) { 2 }),
-        earley_production!("Number" => [["3"]]                            (result: u32) { 3 }),
+        earley_production!("Sum" => [{"Sum"}, ["+"], {"Product"}]         (result) -> u32; { result[0] + result[2] }),
+        earley_production!("Sum" => [{"Product"}]                         (result) -> u32; { result[0] }),
+        earley_production!("Product" => [{"Product"}, ["*"], {"Factor"}]  (result) -> u32; { result[0] * result[2] }),
+        earley_production!("Product" => [{"Factor"}]                      (result) -> u32; { result[0] }),
+        earley_production!("Factor" => [["("], {"Sum"}, [")"]]            (result) -> u32; { result[1] }),
+        earley_production!("Factor" => [{"Number"}]                       (result) -> u32; { result[0] }),
+        earley_production!("Number" => [["1"]]                            (result) -> u32; { 1 }),
+        earley_production!("Number" => [["2"]]                            (result) -> u32; { 2 }),
+        earley_production!("Number" => [["3"]]                            (result) -> u32; { 3 }),
     ];
 
     Grammar::new(productions)
