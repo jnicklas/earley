@@ -7,7 +7,7 @@ macro_rules! earley_count_exprs {
 
 #[macro_export]
 macro_rules! earley_production {
-    ($name:expr => [$($token:tt),*] ($($varname:pat),*) -> $vartype:ty; $action:block) => {
+    ($name:expr => [$($token:expr),*] ($($varname:pat),*) -> $vartype:ty; $action:block) => {
         {
             #[derive(Debug, Clone, Eq, PartialEq)]
             struct A([$crate::Token; earley_count_exprs!($($token),*)]);
@@ -32,17 +32,7 @@ macro_rules! earley_production {
                 }
             }
 
-            Box::new(A([$(earley_expand_token!($token)),*]))
+            Box::new(A([$($token),*]))
         }
-    };
-}
-
-#[macro_export]
-macro_rules! earley_expand_token {
-    ([$name:expr]) => {
-        $crate::Token::Terminal($name)
-    };
-    ({$name:expr}) => {
-        $crate::Token::NonTerminal($name)
     };
 }

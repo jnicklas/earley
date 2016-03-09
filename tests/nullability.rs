@@ -5,15 +5,15 @@ use earley::*;
 
 fn grammar() -> Grammar<u32> {
     let productions: Vec<Box<Production<u32>>> = vec![
-        earley_production!("A" => [{"B"}, {"C"}, {"D"}] (_result) -> u32; { 1 }),
+        earley_production!("A" => [NonTerminal("B"), NonTerminal("C"), NonTerminal("D")] (_result) -> u32; { 1 }),
         earley_production!("B" => [] (_result) -> u32; { 1 }),
-        earley_production!("B" => [["a"]] (_result) -> u32; { 1 }),
-        earley_production!("C" => [{"B"}] (_result) -> u32; { 1 }),
-        earley_production!("C" => [["c"]] (_result) -> u32; { 1 }),
-        earley_production!("D" => [["d"]] (_result) -> u32; { 1 }),
-        earley_production!("D" => [{"E"}] (_result) -> u32; { 1 }),
-        earley_production!("E" => [{"F"}] (_result) -> u32; { 1 }),
-        earley_production!("F" => [["f"]] (_result) -> u32; { 1 }),
+        earley_production!("B" => [Terminal("a")] (_result) -> u32; { 1 }),
+        earley_production!("C" => [NonTerminal("B")] (_result) -> u32; { 1 }),
+        earley_production!("C" => [Terminal("c")] (_result) -> u32; { 1 }),
+        earley_production!("D" => [Terminal("d")] (_result) -> u32; { 1 }),
+        earley_production!("D" => [NonTerminal("E")] (_result) -> u32; { 1 }),
+        earley_production!("E" => [NonTerminal("F")] (_result) -> u32; { 1 }),
+        earley_production!("F" => [Terminal("f")] (_result) -> u32; { 1 }),
     ];
 
     Grammar::new(productions)
