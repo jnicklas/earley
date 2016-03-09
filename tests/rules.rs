@@ -5,12 +5,12 @@ use earley::*;
 
 fn grammar() -> Grammar<u32> {
     let productions: Vec<Box<Production<u32>>> = vec![
-        earley_production!("A" => [Terminal("a")] (_result) -> u32; { 1 }),
-        earley_production!("A" => [NonTerminal("B")] (_result) -> u32; { 1 }),
-        earley_production!("C" => [Terminal("c")] (_result) -> u32; { 1 }),
-        earley_production!("B" => [NonTerminal("C")] (_result) -> u32; { 1 }),
-        earley_production!("C" => [Terminal("d")] (_result) -> u32; { 1 }),
-        earley_production!("C" => [Terminal("e")] (_result) -> u32; { 1 }),
+        earley_production!("A" => [["a"]] (_result) -> u32; { 1 }),
+        earley_production!("A" => [{"B"}] (_result) -> u32; { 1 }),
+        earley_production!("C" => [["c"]] (_result) -> u32; { 1 }),
+        earley_production!("B" => [{"C"}] (_result) -> u32; { 1 }),
+        earley_production!("C" => [["d"]] (_result) -> u32; { 1 }),
+        earley_production!("C" => [["e"]] (_result) -> u32; { 1 }),
     ];
 
     Grammar::new(productions)
