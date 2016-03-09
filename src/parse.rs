@@ -25,7 +25,10 @@ impl<'a, T> Value<'a, T> where T: 'a {
 }
 
 fn find_edges<'a, T>(s: &'a ItemTable<'a, T>, mut set: usize, item: Item<'a, T>) -> T where T: 'a {
-    let mut children = item.get_tokens().iter().rev().map(|token| {
+    let tokens = item.get_tokens();
+    let mut children = Vec::with_capacity(tokens.len());
+
+    for token in tokens.iter().rev() {
         match token {
             &Terminal(value) => {
                 let next_item = s.get_items_in_set(set).iter().cloned().filter(|i| {
@@ -34,9 +37,7 @@ fn find_edges<'a, T>(s: &'a ItemTable<'a, T>, mut set: usize, item: Item<'a, T>)
 
                 set -= 1;
 
-                println!("-- {}", next_item);
-
-                Value::Terminal(next_item.get_scanned_value().unwrap())
+                children.push(Value::Terminal(next_item.get_scanned_value().unwrap()));
             },
             &NonTerminal(name) => {
                 let next_item = s.get_items_in_set(set).iter().cloned().filter(|i| {
@@ -47,14 +48,12 @@ fn find_edges<'a, T>(s: &'a ItemTable<'a, T>, mut set: usize, item: Item<'a, T>)
 
                 set = next_item.get_start();
 
-                println!("++ {}", next_item);
-
-                Value::NonTerminal(value)
+                children.push(Value::NonTerminal(value));
             }
         }
-    }).collect::<Vec<_>>();
+    }
 
-    children.reverse();
+    children.reverse(); // FIXME: this reverse is a bit ugly
 
     item.perform(children)
 }
