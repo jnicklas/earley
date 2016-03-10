@@ -1,13 +1,13 @@
 [package]
-name = "earley"
-version = "0.1.0"
 authors = ["Jonas Nicklas <jonas.nicklas@gmail.com>"]
 description = "A library for constructing parsers from formal grammars using earley's algorithm"
 license = "MIT"
+name = "earley"
+version = "0.1.0"
 
 [dependencies]
-unicode-segmentation = "*"
-log = "*"
+log = "0.3.5"
+unicode-segmentation = "0.1.2"
 
 [dev-dependencies]
-env_logger = "*"
+env_logger = "0.3.2"
