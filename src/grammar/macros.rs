@@ -23,7 +23,6 @@ macro_rules! earley_production {
 
                 #[allow(unused_variables, unused_mut)]
                 fn perform<'a>(&self, result: Vec<$crate::Value<'a, $vartype>>) -> $vartype {
-                    println!("{:?}", result);
                     let mut iterator = result.into_iter();
                     $(
                         let $varname = iterator.next().expect("must perform action with same number of arguments as tokens");
