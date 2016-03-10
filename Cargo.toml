@@ -2,6 +2,8 @@
 name = "earley"
 version = "0.1.0"
 authors = ["Jonas Nicklas <jonas.nicklas@gmail.com>"]
+description = "A library for constructing parsers from formal grammars using earley's algorithm"
+license = "MIT"
 
 [dependencies]
 unicode-segmentation = "*"
