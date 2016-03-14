@@ -3,17 +3,15 @@ extern crate earley;
 
 use earley::*;
 
-fn grammar() -> Grammar<u32> {
-    let productions: Vec<Box<Production<u32>>> = vec![
-        earley_production!("A" => [Terminal("a")] (_result) -> u32; { 1 }),
-        earley_production!("A" => [NonTerminal("B")] (_result) -> u32; { 1 }),
-        earley_production!("C" => [Terminal("c")] (_result) -> u32; { 1 }),
-        earley_production!("B" => [NonTerminal("C")] (_result) -> u32; { 1 }),
-        earley_production!("C" => [Terminal("d")] (_result) -> u32; { 1 }),
-        earley_production!("C" => [Terminal("e")] (_result) -> u32; { 1 }),
-    ];
-
-    Grammar::new(productions)
+fn grammar() -> Grammar<u32, &'static str> {
+    Grammar::new(vec![
+        earley_production!(&'static str: "A" => [Terminal("a")] (_result) -> u32; { 1 }),
+        earley_production!(&'static str: "A" => [NonTerminal("B")] (_result) -> u32; { 1 }),
+        earley_production!(&'static str: "C" => [Terminal("c")] (_result) -> u32; { 1 }),
+        earley_production!(&'static str: "B" => [NonTerminal("C")] (_result) -> u32; { 1 }),
+        earley_production!(&'static str: "C" => [Terminal("d")] (_result) -> u32; { 1 }),
+        earley_production!(&'static str: "C" => [Terminal("e")] (_result) -> u32; { 1 }),
+    ])
 }
 
 #[test]

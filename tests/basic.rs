@@ -3,20 +3,18 @@ extern crate earley;
 
 use earley::*;
 
-fn grammar() -> Grammar<u32> {
-    let productions: Vec<Box<Production<u32>>> = vec![
-        earley_production!("Sum" => [NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")]         (a, _, b) -> u32; { a.get() + b.get() }),
-        earley_production!("Sum" => [NonTerminal("Product")]                                            (a) -> u32;       { a.get() }),
-        earley_production!("Product" => [NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")]  (a, _, b) -> u32; { a.get() * b.get() }),
-        earley_production!("Product" => [NonTerminal("Factor")]                                         (a) -> u32;       { a.get() }),
-        earley_production!("Factor" => [Terminal("("), NonTerminal("Sum"), Terminal(")")]               (_, a, _) -> u32; { a.get() }),
-        earley_production!("Factor" => [NonTerminal("Number")]                                          (a) -> u32;       { a.get() }),
-        earley_production!("Number" => [Terminal("1")]                                                  (result) -> u32;  { 1 }),
-        earley_production!("Number" => [Terminal("2")]                                                  (result) -> u32;  { 2 }),
-        earley_production!("Number" => [Terminal("3")]                                                  (result) -> u32;  { 3 }),
-    ];
-
-    Grammar::new(productions)
+fn grammar() -> Grammar<u32, &'static str> {
+    Grammar::new(vec![
+        earley_production!(&'static str: "Sum" => [NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")]         (a, _, b) -> u32; { a.get() + b.get() }),
+        earley_production!(&'static str: "Sum" => [NonTerminal("Product")]                                            (a) -> u32;       { a.get() }),
+        earley_production!(&'static str: "Product" => [NonTerminal("Product"), Terminal("*"), NonTerminal("Factor")]  (a, _, b) -> u32; { a.get() * b.get() }),
+        earley_production!(&'static str: "Product" => [NonTerminal("Factor")]                                         (a) -> u32;       { a.get() }),
+        earley_production!(&'static str: "Factor" => [Terminal("("), NonTerminal("Sum"), Terminal(")")]               (_, a, _) -> u32; { a.get() }),
+        earley_production!(&'static str: "Factor" => [NonTerminal("Number")]                                          (a) -> u32;       { a.get() }),
+        earley_production!(&'static str: "Number" => [Terminal("1")]                                                  (result) -> u32;  { 1 }),
+        earley_production!(&'static str: "Number" => [Terminal("2")]                                                  (result) -> u32;  { 2 }),
+        earley_production!(&'static str: "Number" => [Terminal("3")]                                                  (result) -> u32;  { 3 }),
+    ])
 }
 
 #[test]

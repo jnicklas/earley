@@ -1,5 +1,6 @@
 pub mod production;
 pub mod rule;
+pub mod lexeme;
 #[macro_use]
 pub mod macros;
 
@@ -10,19 +11,22 @@ use std::collections::BTreeMap;
 use parse::parse;
 pub use grammar::production::{Production};
 pub use grammar::rule::Rule;
+pub use grammar::lexeme::Lexeme;
 
-pub struct Grammar<T> {
-    starting_rule: &'static str,
-    rules: BTreeMap<&'static str, Rule<T>>,
+type RuleMap<T, K> = BTreeMap<K, Rule<T, K>>;
+
+pub struct Grammar<T, K> where K: Lexeme {
+    starting_rule: K,
+    rules: RuleMap<T, K>,
 }
 
-impl<T> Grammar<T> {
-    pub fn new(productions: Vec<Box<Production<T>>>) -> Grammar<T> {
+impl<T, K> Grammar<T, K> where K: Lexeme {
+    pub fn new(productions: Vec<Box<Production<T, K>>>) -> Grammar<T, K> {
         let first_rule_name = {
             productions.get(0).expect("grammar must have at least one rule").get_name()
         };
 
-        let mut rules = productions
+        let mut rules: RuleMap<T, K> = productions
             .into_iter()
             .group_by(|p| p.get_name())
             .map(|(name, productions)| (name, Rule::new(name, productions)))
@@ -36,23 +40,23 @@ impl<T> Grammar<T> {
         }
     }
 
-    pub fn get_starting_rule_name(&self) -> &'static str {
+    pub fn get_starting_rule_name(&self) -> K {
         self.starting_rule
     }
 
-    pub fn get_rule(&self, name: &str) -> Option<&Rule<T>> {
-        self.rules.get(name)
+    pub fn get_rule(&self, name: K) -> Option<&Rule<T, K>> {
+        self.rules.get(&name)
     }
 
-    pub fn productions_for_starting_rule(&self) -> &[Box<Production<T>>] {
-        &self.rules[self.starting_rule].get_productions()
+    pub fn productions_for_starting_rule(&self) -> &[Box<Production<T, K>>] {
+        &self.rules[&self.starting_rule].get_productions()
     }
 
-    pub fn productions_for(&self, name: &str) -> &[Box<Production<T>>] {
-        &self.rules[name].get_productions()
+    pub fn productions_for(&self, name: K) -> &[Box<Production<T, K>>] {
+        &self.rules[&name].get_productions()
     }
 
-    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, T> where T: 'a {
+    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, T, K> where T: 'a {
         ItemTable::build(self, input)
     }
 
@@ -62,7 +66,7 @@ impl<T> Grammar<T> {
     }
 }
 
-fn mark_nullable<T>(rules: &mut BTreeMap<&'static str, Rule<T>>) {
+fn mark_nullable<T, K>(rules: &mut RuleMap<T, K>) where K: Lexeme {
     loop {
         let mut found_nullable_rule = false;
         for (_, rule) in rules.iter() {
@@ -73,7 +77,7 @@ fn mark_nullable<T>(rules: &mut BTreeMap<&'static str, Rule<T>>) {
                     production.get_tokens().len() == 0 || production.get_tokens().iter().all(|token| {
                         match token {
                             &Terminal(_) => false,
-                            &NonTerminal(name) => rules[name].is_nullable()
+                            &NonTerminal(name) => rules[&name].is_nullable()
                         }
                     })
                 });

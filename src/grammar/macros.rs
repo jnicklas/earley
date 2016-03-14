@@ -7,17 +7,17 @@ macro_rules! earley_count_exprs {
 
 #[macro_export]
 macro_rules! earley_production {
-    ($name:expr => [$($token:expr),*] ($($varname:pat),*) -> $vartype:ty; $action:block) => {
+    ($token_type:ty: $name:expr => [$($token:expr),*] ($($varname:pat),*) -> $vartype:ty; $action:block) => {
         {
             #[derive(Debug, Clone, Eq, PartialEq)]
-            struct A([$crate::Token; earley_count_exprs!($($token),*)]);
+            struct A([$crate::Token<$token_type>; earley_count_exprs!($($token),*)]);
 
-            impl $crate::Production<$vartype> for A {
-                fn get_name(&self) -> &'static str {
+            impl $crate::Production<$vartype, $token_type> for A {
+                fn get_name(&self) -> $token_type {
                     $name
                 }
 
-                fn get_tokens(&self) -> &[$crate::Token] {
+                fn get_tokens(&self) -> &[$crate::Token<$token_type>] {
                     &self.0
                 }
 
