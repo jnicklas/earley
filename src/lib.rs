@@ -1,6 +1,4 @@
 extern crate unicode_segmentation;
-#[macro_use]
-extern crate log;
 
 #[macro_use]
 mod grammar;

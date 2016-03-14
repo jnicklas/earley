@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate earley;
-extern crate env_logger;
 
 use earley::*;
 
@@ -15,8 +14,6 @@ enum AlgebraToken {
 use AlgebraToken::*;
 
 fn main() {
-    env_logger::init().unwrap();
-
     let grammar = Grammar::new(vec![
         earley_production!(AlgebraToken: Sum => [NonTerminal(Sum), Terminal("+"), NonTerminal(Product)]         (a, _, b) -> u32; { a.get() + b.get() }),
         earley_production!(AlgebraToken: Sum => [NonTerminal(Product)]                                          (a) -> u32;       { a.get() }),

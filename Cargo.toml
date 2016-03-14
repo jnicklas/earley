@@ -8,8 +8,4 @@ repository = "https://github.com/jnicklas/earley"
 keywords = ["grammar", "parsing", "parser", "recognizer", "language"]
 
 [dependencies]
-log = "0.3.5"
 unicode-segmentation = "0.1.2"
-
-[dev-dependencies]
-env_logger = "0.3.2"

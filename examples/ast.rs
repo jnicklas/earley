@@ -23,13 +23,10 @@ use Algebra::*;
 
 #[macro_use]
 extern crate earley;
-extern crate env_logger;
 
 use earley::*;
 
 fn main() {
-    env_logger::init().unwrap();
-
     let grammar = Grammar::new(vec![
         earley_production!(&'static str: "Sum" => [NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")]         (a, _, b) -> Algebra; { Sum(Box::new(a.get()), Box::new(b.get())) }),
         earley_production!(&'static str: "Sum" => [NonTerminal("Product")]                                            (a) -> Algebra;       { a.get() }),
