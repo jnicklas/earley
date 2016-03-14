@@ -14,20 +14,20 @@ pub use grammar::rule::Rule;
 pub use grammar::rule_name::RuleName;
 pub use grammar::token::{Token, Terminal, NonTerminal};
 
-type RuleMap<T, K> = BTreeMap<K, Rule<T, K>>;
+type RuleMap<T, N> = BTreeMap<N, Rule<T, N>>;
 
-pub struct Grammar<T, K> where K: RuleName {
-    starting_rule: K,
-    rules: RuleMap<T, K>,
+pub struct Grammar<T, N> where N: RuleName {
+    starting_rule: N,
+    rules: RuleMap<T, N>,
 }
 
-impl<T, K> Grammar<T, K> where K: RuleName {
-    pub fn new(productions: Vec<Box<Production<T, K>>>) -> Grammar<T, K> {
+impl<T, N> Grammar<T, N> where N: RuleName {
+    pub fn new(productions: Vec<Box<Production<T, N>>>) -> Grammar<T, N> {
         let first_rule_name = {
             productions.get(0).expect("grammar must have at least one rule").get_name()
         };
 
-        let mut rules: RuleMap<T, K> = productions
+        let mut rules: RuleMap<T, N> = productions
             .into_iter()
             .group_by(|p| p.get_name())
             .map(|(name, productions)| (name, Rule::new(name, productions)))
@@ -41,23 +41,23 @@ impl<T, K> Grammar<T, K> where K: RuleName {
         }
     }
 
-    pub fn get_starting_rule_name(&self) -> K {
+    pub fn get_starting_rule_name(&self) -> N {
         self.starting_rule
     }
 
-    pub fn get_rule(&self, name: K) -> Option<&Rule<T, K>> {
+    pub fn get_rule(&self, name: N) -> Option<&Rule<T, N>> {
         self.rules.get(&name)
     }
 
-    pub fn productions_for_starting_rule(&self) -> &[Box<Production<T, K>>] {
+    pub fn productions_for_starting_rule(&self) -> &[Box<Production<T, N>>] {
         &self.rules[&self.starting_rule].get_productions()
     }
 
-    pub fn productions_for(&self, name: K) -> &[Box<Production<T, K>>] {
+    pub fn productions_for(&self, name: N) -> &[Box<Production<T, N>>] {
         &self.rules[&name].get_productions()
     }
 
-    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, T, K> where T: 'a {
+    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, T, N> where T: 'a {
         ItemTable::build(self, input)
     }
 
@@ -67,7 +67,7 @@ impl<T, K> Grammar<T, K> where K: RuleName {
     }
 }
 
-fn mark_nullable<T, K>(rules: &mut RuleMap<T, K>) where K: RuleName {
+fn mark_nullable<T, N>(rules: &mut RuleMap<T, N>) where N: RuleName {
     loop {
         let mut found_nullable_rule = false;
         for (_, rule) in rules.iter() {

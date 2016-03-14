@@ -2,15 +2,15 @@ use std::fmt;
 use grammar::RuleName;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Token<K> where K: RuleName {
+pub enum Token<N> where N: RuleName {
     Terminal(&'static str),
-    NonTerminal(K),
+    NonTerminal(N),
 }
 
 pub use Token::Terminal;
 pub use Token::NonTerminal;
 
-impl<K> fmt::Display for Token<K> where K: RuleName + fmt::Display {
+impl<N> fmt::Display for Token<N> where N: RuleName + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Terminal(str) => write!(f, "'{}'", str),

@@ -4,14 +4,14 @@ use std::fmt;
 use unicode_segmentation::UnicodeSegmentation;
 use grammar::{Grammar, RuleName, Terminal, NonTerminal};
 
-pub struct ItemTable<'a, T, K> where T: 'a, K: RuleName {
+pub struct ItemTable<'a, T, N> where T: 'a, N: RuleName {
     input: &'a str,
-    table: Vec<Vec<Item<'a, T, K>>>,
-    grammar: &'a Grammar<T, K>,
+    table: Vec<Vec<Item<'a, T, N>>>,
+    grammar: &'a Grammar<T, N>,
 }
 
-impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
-    pub fn build(grammar: &'a Grammar<T, K>, input: &'a str) -> ItemTable<'a, T, K> {
+impl<'a, T, N> ItemTable<'a, T, N> where T: 'a, N: RuleName {
+    pub fn build(grammar: &'a Grammar<T, N>, input: &'a str) -> ItemTable<'a, T, N> {
         let table = repeat(0u8).map(|_| Vec::with_capacity(100)).take(input.len() + 1).collect();
         let mut s = ItemTable { input: input, grammar: grammar, table: table };
 
@@ -43,19 +43,19 @@ impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
         return s;
     }
 
-    pub fn predict(&mut self, char_index: usize, token: K) {
+    pub fn predict(&mut self, char_index: usize, token: N) {
         for production in self.grammar.productions_for(token) {
             self.push(char_index, Item::predict(&**production, char_index));
         }
     }
 
-    pub fn scan(&mut self, item: Item<'a, T, K>, char_index: usize, current_char: &'a str, token: &str) {
+    pub fn scan(&mut self, item: Item<'a, T, N>, char_index: usize, current_char: &'a str, token: &str) {
         if token == current_char {
             self.push(char_index + 1, item.scan(current_char));
         }
     }
 
-    pub fn complete(&mut self, item: Item<'a, T, K>, char_index: usize) {
+    pub fn complete(&mut self, item: Item<'a, T, N>, char_index: usize) {
         // FIXME: Attack of the clones!
         for old_item in self.table[item.get_start()].clone().iter().cloned() {
             if let Some(&NonTerminal(token)) = old_item.next_token() {
@@ -66,11 +66,11 @@ impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
         }
     }
 
-    pub fn complete_nullable(&mut self, item: Item<'a, T, K>, char_index: usize) {
+    pub fn complete_nullable(&mut self, item: Item<'a, T, N>, char_index: usize) {
         self.push(char_index, item.complete());
     }
 
-    pub fn matching_items(&self) -> Vec<Item<'a, T, K>> {
+    pub fn matching_items(&self) -> Vec<Item<'a, T, N>> {
         if let Some(items) = self.table.last() {
             items.iter().filter(|item| {
                 item.get_name() == self.grammar.get_starting_rule_name() && item.is_complete() && item.get_start() == 0
@@ -80,7 +80,7 @@ impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
         }
     }
 
-    fn push(&mut self, index: usize, item: Item<'a, T, K>) {
+    fn push(&mut self, index: usize, item: Item<'a, T, N>) {
         if let Some(mut items) = self.table.get_mut(index) {
             if !items.contains(&item) {
                 items.push(item);
@@ -88,7 +88,7 @@ impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
         }
     }
 
-    pub fn get_items_in_set(&'a self, set: usize) -> &'a [Item<'a, T, K>] {
+    pub fn get_items_in_set(&'a self, set: usize) -> &'a [Item<'a, T, N>] {
         &self.table[set]
     }
 
@@ -97,7 +97,7 @@ impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
     }
 }
 
-impl<'a, T, K> fmt::Display for ItemTable<'a, T, K> where T: 'a, K: RuleName + fmt::Display {
+impl<'a, T, N> fmt::Display for ItemTable<'a, T, N> where T: 'a, N: RuleName + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for (index, row) in self.table.iter().enumerate() {
             try!(format!("{:=^80}\n", format!(" {} ", index)).fmt(f));

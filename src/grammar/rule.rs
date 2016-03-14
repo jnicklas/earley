@@ -2,14 +2,14 @@ use grammar::Production;
 use std::cell::Cell;
 use grammar::RuleName;
 
-pub struct Rule<T, K> where K: RuleName {
-    name: K,
-    productions: Vec<Box<Production<T, K>>>,
+pub struct Rule<T, N> where N: RuleName {
+    name: N,
+    productions: Vec<Box<Production<T, N>>>,
     nullable: Cell<bool>,
 }
 
-impl<T, K> Rule<T, K> where K: RuleName {
-    pub fn new(name: K, productions: Vec<Box<Production<T, K>>>) -> Rule<T, K> {
+impl<T, N> Rule<T, N> where N: RuleName {
+    pub fn new(name: N, productions: Vec<Box<Production<T, N>>>) -> Rule<T, N> {
         Rule { name: name, productions: productions.into_iter().collect(), nullable: Cell::new(false) }
     }
 
@@ -17,11 +17,11 @@ impl<T, K> Rule<T, K> where K: RuleName {
         self.nullable.get()
     }
 
-    pub fn get_name(&self) -> K {
+    pub fn get_name(&self) -> N {
         self.name
     }
 
-    pub fn get_productions(&self) -> &[Box<Production<T, K>>] {
+    pub fn get_productions(&self) -> &[Box<Production<T, N>>] {
         &self.productions
     }
 
