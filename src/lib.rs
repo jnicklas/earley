@@ -6,11 +6,9 @@ extern crate log;
 mod grammar;
 mod item;
 mod item_table;
-mod token;
 mod parse;
 mod group_by;
 
-pub use token::{Token, Terminal, NonTerminal};
-pub use grammar::{Grammar, Rule, Production, Lexeme};
+pub use grammar::{Grammar, Rule, Production, RuleName, Token, Terminal, NonTerminal};
 
 pub use parse::{Value};

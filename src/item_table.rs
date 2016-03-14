@@ -1,18 +1,16 @@
 use std::iter::repeat;
 use item::Item;
-use grammar::Grammar;
-use token::*;
 use std::fmt;
 use unicode_segmentation::UnicodeSegmentation;
-use grammar::Lexeme;
+use grammar::{Grammar, RuleName, Terminal, NonTerminal};
 
-pub struct ItemTable<'a, T, K> where T: 'a, K: Lexeme {
+pub struct ItemTable<'a, T, K> where T: 'a, K: RuleName {
     input: &'a str,
     table: Vec<Vec<Item<'a, T, K>>>,
     grammar: &'a Grammar<T, K>,
 }
 
-impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: Lexeme {
+impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: RuleName {
     pub fn build(grammar: &'a Grammar<T, K>, input: &'a str) -> ItemTable<'a, T, K> {
         let table = repeat(0u8).map(|_| Vec::with_capacity(100)).take(input.len() + 1).collect();
         let mut s = ItemTable { input: input, grammar: grammar, table: table };
@@ -99,7 +97,7 @@ impl<'a, T, K> ItemTable<'a, T, K> where T: 'a, K: Lexeme {
     }
 }
 
-impl<'a, T, K> fmt::Display for ItemTable<'a, T, K> where T: 'a, K: Lexeme + fmt::Display {
+impl<'a, T, K> fmt::Display for ItemTable<'a, T, K> where T: 'a, K: RuleName + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for (index, row) in self.table.iter().enumerate() {
             try!(format!("{:=^80}\n", format!(" {} ", index)).fmt(f));

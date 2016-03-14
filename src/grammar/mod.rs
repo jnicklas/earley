@@ -1,26 +1,27 @@
 pub mod production;
+pub mod token;
 pub mod rule;
-pub mod lexeme;
+pub mod rule_name;
 #[macro_use]
 pub mod macros;
 
 use group_by::GroupByExt;
-use token::{Terminal, NonTerminal};
 use item_table::ItemTable;
 use std::collections::BTreeMap;
 use parse::parse;
 pub use grammar::production::{Production};
 pub use grammar::rule::Rule;
-pub use grammar::lexeme::Lexeme;
+pub use grammar::rule_name::RuleName;
+pub use grammar::token::{Token, Terminal, NonTerminal};
 
 type RuleMap<T, K> = BTreeMap<K, Rule<T, K>>;
 
-pub struct Grammar<T, K> where K: Lexeme {
+pub struct Grammar<T, K> where K: RuleName {
     starting_rule: K,
     rules: RuleMap<T, K>,
 }
 
-impl<T, K> Grammar<T, K> where K: Lexeme {
+impl<T, K> Grammar<T, K> where K: RuleName {
     pub fn new(productions: Vec<Box<Production<T, K>>>) -> Grammar<T, K> {
         let first_rule_name = {
             productions.get(0).expect("grammar must have at least one rule").get_name()
@@ -66,7 +67,7 @@ impl<T, K> Grammar<T, K> where K: Lexeme {
     }
 }
 
-fn mark_nullable<T, K>(rules: &mut RuleMap<T, K>) where K: Lexeme {
+fn mark_nullable<T, K>(rules: &mut RuleMap<T, K>) where K: RuleName {
     loop {
         let mut found_nullable_rule = false;
         for (_, rule) in rules.iter() {

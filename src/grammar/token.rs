@@ -1,8 +1,8 @@
 use std::fmt;
-use grammar::Lexeme;
+use grammar::RuleName;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Token<K> where K: Lexeme {
+pub enum Token<K> where K: RuleName {
     Terminal(&'static str),
     NonTerminal(K),
 }
@@ -10,7 +10,7 @@ pub enum Token<K> where K: Lexeme {
 pub use Token::Terminal;
 pub use Token::NonTerminal;
 
-impl<K> fmt::Display for Token<K> where K: Lexeme + fmt::Display {
+impl<K> fmt::Display for Token<K> where K: RuleName + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Terminal(str) => write!(f, "'{}'", str),

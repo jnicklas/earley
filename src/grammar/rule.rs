@@ -1,14 +1,14 @@
 use grammar::Production;
 use std::cell::Cell;
-use grammar::Lexeme;
+use grammar::RuleName;
 
-pub struct Rule<T, K> where K: Lexeme {
+pub struct Rule<T, K> where K: RuleName {
     name: K,
     productions: Vec<Box<Production<T, K>>>,
     nullable: Cell<bool>,
 }
 
-impl<T, K> Rule<T, K> where K: Lexeme {
+impl<T, K> Rule<T, K> where K: RuleName {
     pub fn new(name: K, productions: Vec<Box<Production<T, K>>>) -> Rule<T, K> {
         Rule { name: name, productions: productions.into_iter().collect(), nullable: Cell::new(false) }
     }

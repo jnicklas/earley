@@ -1,8 +1,6 @@
-use grammar::Production;
-use token::Token;
 use std::fmt;
 use parse::Value;
-use grammar::Lexeme;
+use grammar::{Production, Token, RuleName};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operation<'a> {
@@ -12,14 +10,14 @@ pub enum Operation<'a> {
 }
 
 #[derive(Eq)]
-pub struct Item<'a, T, K> where T: 'a, K: Lexeme {
+pub struct Item<'a, T, K> where T: 'a, K: RuleName {
     operation: Operation<'a>,
     production: &'a Production<T, K>,
     start: usize,
     next: usize,
 }
 
-impl<'a, T, K> PartialEq for Item<'a, T, K> where T: 'a, K: Lexeme {
+impl<'a, T, K> PartialEq for Item<'a, T, K> where T: 'a, K: RuleName {
     fn eq(&self, other: &Self) -> bool {
         self.operation == other.operation
             && self.production == other.production
@@ -28,7 +26,7 @@ impl<'a, T, K> PartialEq for Item<'a, T, K> where T: 'a, K: Lexeme {
     }
 }
 
-impl<'a, T, K> Clone for Item<'a, T, K> where T: 'a, K: Lexeme {
+impl<'a, T, K> Clone for Item<'a, T, K> where T: 'a, K: RuleName {
     fn clone(&self) -> Self {
         Item {
             operation: self.operation.clone(),
@@ -39,7 +37,7 @@ impl<'a, T, K> Clone for Item<'a, T, K> where T: 'a, K: Lexeme {
     }
 }
 
-impl<'a, T, K> Item<'a, T, K> where T: 'a, K: Lexeme {
+impl<'a, T, K> Item<'a, T, K> where T: 'a, K: RuleName {
     pub fn predict(production: &'a Production<T, K>, start: usize) -> Item<'a, T, K> {
         Item { operation: Operation::Predict, production: production, next: 0, start: start }
     }
@@ -91,7 +89,7 @@ impl<'a, T, K> Item<'a, T, K> where T: 'a, K: Lexeme {
     }
 }
 
-impl<'a, T, K> fmt::Display for Item<'a, T, K> where T: 'a, K: Lexeme + fmt::Display {
+impl<'a, T, K> fmt::Display for Item<'a, T, K> where T: 'a, K: RuleName + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut tokens: Vec<String> = self.production.get_tokens().iter().map(|t| t.to_string()).collect();
         if self.next < tokens.len() {
