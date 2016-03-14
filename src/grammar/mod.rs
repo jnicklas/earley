@@ -14,20 +14,20 @@ pub use grammar::rule::Rule;
 pub use grammar::rule_name::RuleName;
 pub use grammar::token::{Token, Terminal, NonTerminal};
 
-type RuleMap<T, N> = BTreeMap<N, Rule<T, N>>;
+type RuleMap<O, N> = BTreeMap<N, Rule<O, N>>;
 
-pub struct Grammar<T, N> where N: RuleName {
+pub struct Grammar<O, N> where N: RuleName {
     starting_rule: N,
-    rules: RuleMap<T, N>,
+    rules: RuleMap<O, N>,
 }
 
-impl<T, N> Grammar<T, N> where N: RuleName {
-    pub fn new(productions: Vec<Box<Production<T, N>>>) -> Grammar<T, N> {
+impl<O, N> Grammar<O, N> where N: RuleName {
+    pub fn new(productions: Vec<Box<Production<O, N>>>) -> Grammar<O, N> {
         let first_rule_name = {
             productions.get(0).expect("grammar must have at least one rule").get_name()
         };
 
-        let mut rules: RuleMap<T, N> = productions
+        let mut rules: RuleMap<O, N> = productions
             .into_iter()
             .group_by(|p| p.get_name())
             .map(|(name, productions)| (name, Rule::new(name, productions)))
@@ -45,29 +45,29 @@ impl<T, N> Grammar<T, N> where N: RuleName {
         self.starting_rule
     }
 
-    pub fn get_rule(&self, name: N) -> Option<&Rule<T, N>> {
+    pub fn get_rule(&self, name: N) -> Option<&Rule<O, N>> {
         self.rules.get(&name)
     }
 
-    pub fn productions_for_starting_rule(&self) -> &[Box<Production<T, N>>] {
+    pub fn productions_for_starting_rule(&self) -> &[Box<Production<O, N>>] {
         &self.rules[&self.starting_rule].get_productions()
     }
 
-    pub fn productions_for(&self, name: N) -> &[Box<Production<T, N>>] {
+    pub fn productions_for(&self, name: N) -> &[Box<Production<O, N>>] {
         &self.rules[&name].get_productions()
     }
 
-    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, T, N> where T: 'a {
+    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, O, N> where O: 'a {
         ItemTable::build(self, input)
     }
 
-    pub fn parse<'a>(&'a self, input: &'a str) -> Option<T> where T: 'a {
+    pub fn parse<'a>(&'a self, input: &'a str) -> Option<O> where O: 'a {
         let table = self.build_table(input);
         parse(&table)
     }
 }
 
-fn mark_nullable<T, N>(rules: &mut RuleMap<T, N>) where N: RuleName {
+fn mark_nullable<O, N>(rules: &mut RuleMap<O, N>) where N: RuleName {
     loop {
         let mut found_nullable_rule = false;
         for (_, rule) in rules.iter() {

@@ -3,13 +3,13 @@ use item_table::ItemTable;
 use grammar::{RuleName, Terminal, NonTerminal};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum Value<'a, T> {
+pub enum Value<'a, O> {
     Terminal(&'a str),
-    NonTerminal(T),
+    NonTerminal(O),
 }
 
-impl<'a, T> Value<'a, T> where T: 'a {
-    pub fn get(self) -> T {
+impl<'a, O> Value<'a, O> where O: 'a {
+    pub fn get(self) -> O {
         match self {
             Value::Terminal(_) => panic!("cannot call `get()` on terminal nodes"),
             Value::NonTerminal(value) => value,
@@ -24,7 +24,7 @@ impl<'a, T> Value<'a, T> where T: 'a {
     }
 }
 
-fn find_edges<'a, T, N>(s: &'a ItemTable<'a, T, N>, mut set: usize, item: Item<'a, T, N>) -> T where T: 'a, N: RuleName {
+fn find_edges<'a, O, N>(s: &'a ItemTable<'a, O, N>, mut set: usize, item: Item<'a, O, N>) -> O where O: 'a, N: RuleName {
     let tokens = item.get_tokens();
     let mut children = Vec::with_capacity(tokens.len());
 
@@ -58,7 +58,7 @@ fn find_edges<'a, T, N>(s: &'a ItemTable<'a, T, N>, mut set: usize, item: Item<'
     item.perform(children)
 }
 
-pub fn parse<'a, T, N>(s: &'a ItemTable<T, N>) -> Option<T> where T: 'a, N: RuleName {
+pub fn parse<'a, O, N>(s: &'a ItemTable<O, N>) -> Option<O> where O: 'a, N: RuleName {
     match s.matching_items().into_iter().nth(0) {
         Some(item) => {
             Some(find_edges(s, s.get_input().len(), item.clone()))

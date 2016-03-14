@@ -10,14 +10,14 @@ pub enum Operation<'a> {
 }
 
 #[derive(Eq)]
-pub struct Item<'a, T, N> where T: 'a, N: RuleName {
+pub struct Item<'a, O, N> where O: 'a, N: RuleName {
     operation: Operation<'a>,
-    production: &'a Production<T, N>,
+    production: &'a Production<O, N>,
     start: usize,
     next: usize,
 }
 
-impl<'a, T, N> PartialEq for Item<'a, T, N> where T: 'a, N: RuleName {
+impl<'a, O, N> PartialEq for Item<'a, O, N> where O: 'a, N: RuleName {
     fn eq(&self, other: &Self) -> bool {
         self.operation == other.operation
             && self.production == other.production
@@ -26,7 +26,7 @@ impl<'a, T, N> PartialEq for Item<'a, T, N> where T: 'a, N: RuleName {
     }
 }
 
-impl<'a, T, N> Clone for Item<'a, T, N> where T: 'a, N: RuleName {
+impl<'a, O, N> Clone for Item<'a, O, N> where O: 'a, N: RuleName {
     fn clone(&self) -> Self {
         Item {
             operation: self.operation.clone(),
@@ -37,16 +37,16 @@ impl<'a, T, N> Clone for Item<'a, T, N> where T: 'a, N: RuleName {
     }
 }
 
-impl<'a, T, N> Item<'a, T, N> where T: 'a, N: RuleName {
-    pub fn predict(production: &'a Production<T, N>, start: usize) -> Item<'a, T, N> {
+impl<'a, O, N> Item<'a, O, N> where O: 'a, N: RuleName {
+    pub fn predict(production: &'a Production<O, N>, start: usize) -> Item<'a, O, N> {
         Item { operation: Operation::Predict, production: production, next: 0, start: start }
     }
 
-    pub fn scan(&self, value: &'a str) -> Item<'a, T, N> {
+    pub fn scan(&self, value: &'a str) -> Item<'a, O, N> {
         Item { operation: Operation::Scan(value), production: self.production, next: self.next + 1, start: self.start }
     }
 
-    pub fn complete(&self) -> Item<'a, T, N> {
+    pub fn complete(&self) -> Item<'a, O, N> {
         Item { operation: Operation::Complete, production: self.production, next: self.next + 1, start: self.start }
     }
     pub fn next_token(&self) -> Option<&Token<N>> {
@@ -57,7 +57,7 @@ impl<'a, T, N> Item<'a, T, N> where T: 'a, N: RuleName {
         self.next >= self.production.get_tokens().len()
     }
 
-    pub fn has_same_production(&self, other: &'a Item<'a, T, N>) -> bool {
+    pub fn has_same_production(&self, other: &'a Item<'a, O, N>) -> bool {
         self.production == other.production
     }
 
@@ -84,12 +84,12 @@ impl<'a, T, N> Item<'a, T, N> where T: 'a, N: RuleName {
         self.production.get_tokens()
     }
 
-    pub fn perform(&self, result: Vec<Value<'a, T>>) -> T {
+    pub fn perform(&self, result: Vec<Value<'a, O>>) -> O {
         self.production.perform(result)
     }
 }
 
-impl<'a, T, N> fmt::Display for Item<'a, T, N> where T: 'a, N: RuleName + fmt::Display {
+impl<'a, O, N> fmt::Display for Item<'a, O, N> where O: 'a, N: RuleName + fmt::Display {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut tokens: Vec<String> = self.production.get_tokens().iter().map(|t| t.to_string()).collect();
         if self.next < tokens.len() {
