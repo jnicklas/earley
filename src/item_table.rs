@@ -1,7 +1,6 @@
 use std::iter::repeat;
 use item::Item;
 use std::fmt;
-use unicode_segmentation::UnicodeSegmentation;
 use grammar::{Grammar, RuleName, Terminal, NonTerminal};
 
 pub struct ItemTable<'a, N, O> where O: 'a, N: RuleName {
@@ -19,7 +18,7 @@ impl<'a, N, O> ItemTable<'a, N, O> where O: 'a, N: RuleName {
             s.push(0, Item::predict(&**production, 0))
         }
 
-        let chars = UnicodeSegmentation::graphemes(input, true).chain(Some("\0").into_iter());
+        let chars = input.chars().chain(Some('\0').into_iter());
 
         for (char_index, current_char) in chars.enumerate() {
             let mut item_index = 0;
@@ -49,7 +48,7 @@ impl<'a, N, O> ItemTable<'a, N, O> where O: 'a, N: RuleName {
         }
     }
 
-    pub fn scan(&mut self, item: Item<'a, N, O>, char_index: usize, current_char: &'a str, token: &str) {
+    pub fn scan(&mut self, item: Item<'a, N, O>, char_index: usize, current_char: char, token: char) {
         if token == current_char {
             self.push(char_index + 1, item.scan(current_char));
         }

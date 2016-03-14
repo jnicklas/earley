@@ -3,7 +3,7 @@ use grammar::RuleName;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Token<N> where N: RuleName {
-    Terminal(&'static str),
+    Terminal(char),
     NonTerminal(N),
 }
 

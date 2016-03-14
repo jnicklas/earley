@@ -6,7 +6,7 @@ pub trait Production<N, O> where N: RuleName {
 
     fn get_tokens(&self) -> &[Token<N>];
 
-    fn perform<'a>(&self, result: Vec<Value<'a, O>>) -> O;
+    fn perform(&self, result: Vec<Value<O>>) -> O;
 }
 
 impl<'a, N, O> PartialEq for &'a Production<N, O> where N: RuleName {

@@ -3,12 +3,12 @@ use item_table::ItemTable;
 use grammar::{RuleName, Terminal, NonTerminal};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum Value<'a, O> {
-    Terminal(&'a str),
+pub enum Value<O> {
+    Terminal(char),
     NonTerminal(O),
 }
 
-impl<'a, O> Value<'a, O> where O: 'a {
+impl<O> Value<O> {
     pub fn get(self) -> O {
         match self {
             Value::Terminal(_) => panic!("cannot call `get()` on terminal nodes"),
@@ -16,7 +16,7 @@ impl<'a, O> Value<'a, O> where O: 'a {
         }
     }
 
-    pub fn value(self) -> &'a str {
+    pub fn value(self) -> char {
         match self {
             Value::Terminal(value) => value,
             Value::NonTerminal(_) => panic!("cannot call `value()` on non-terminal nodes"),

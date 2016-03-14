@@ -3,15 +3,15 @@ use parse::Value;
 use grammar::{Production, Token, RuleName};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Operation<'a> {
-    Scan(&'a str),
+pub enum Operation {
+    Scan(char),
     Predict,
     Complete,
 }
 
 #[derive(Eq)]
 pub struct Item<'a, N, O> where O: 'a, N: RuleName {
-    operation: Operation<'a>,
+    operation: Operation,
     production: &'a Production<N, O>,
     start: usize,
     next: usize,
@@ -42,7 +42,7 @@ impl<'a, N, O> Item<'a, N, O> where O: 'a, N: RuleName {
         Item { operation: Operation::Predict, production: production, next: 0, start: start }
     }
 
-    pub fn scan(&self, value: &'a str) -> Item<'a, N, O> {
+    pub fn scan(&self, value: char) -> Item<'a, N, O> {
         Item { operation: Operation::Scan(value), production: self.production, next: self.next + 1, start: self.start }
     }
 
@@ -65,7 +65,7 @@ impl<'a, N, O> Item<'a, N, O> where O: 'a, N: RuleName {
         self.operation
     }
 
-    pub fn get_scanned_value(&self) -> Option<&'a str> {
+    pub fn get_scanned_value(&self) -> Option<char> {
         match self.operation {
             Operation::Scan(value) => Some(value),
             _ => None
@@ -84,7 +84,7 @@ impl<'a, N, O> Item<'a, N, O> where O: 'a, N: RuleName {
         self.production.get_tokens()
     }
 
-    pub fn perform(&self, result: Vec<Value<'a, O>>) -> O {
+    pub fn perform(&self, result: Vec<Value<O>>) -> O {
         self.production.perform(result)
     }
 }

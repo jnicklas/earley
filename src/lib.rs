@@ -1,5 +1,3 @@
-extern crate unicode_segmentation;
-
 #[macro_use]
 mod grammar;
 mod item;

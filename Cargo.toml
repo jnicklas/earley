@@ -6,6 +6,3 @@ name = "earley"
 version = "0.1.0"
 repository = "https://github.com/jnicklas/earley"
 keywords = ["grammar", "parsing", "parser", "recognizer", "language"]
-
-[dependencies]
-unicode-segmentation = "0.1.2"
