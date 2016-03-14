@@ -7,22 +7,22 @@ macro_rules! earley_count_exprs {
 
 #[macro_export]
 macro_rules! earley_production {
-    ($token_type:ty: $name:expr => [$($token:expr),*] ($($varname:pat),*) -> $vartype:ty; $action:block) => {
+    ($rule_name_type:ty: $name:expr => [$($token:expr),*] ($($varname:pat),*) -> $output_type:ty; $action:block) => {
         {
             #[derive(Debug, Clone, Eq, PartialEq)]
-            struct A([$crate::Token<$token_type>; earley_count_exprs!($($token),*)]);
+            struct A([$crate::Token<$rule_name_type>; earley_count_exprs!($($token),*)]);
 
-            impl $crate::Production<$vartype, $token_type> for A {
-                fn get_name(&self) -> $token_type {
+            impl $crate::Production<$rule_name_type, $output_type> for A {
+                fn get_name(&self) -> $rule_name_type {
                     $name
                 }
 
-                fn get_tokens(&self) -> &[$crate::Token<$token_type>] {
+                fn get_tokens(&self) -> &[$crate::Token<$rule_name_type>] {
                     &self.0
                 }
 
                 #[allow(unused_variables, unused_mut)]
-                fn perform<'a>(&self, result: Vec<$crate::Value<'a, $vartype>>) -> $vartype {
+                fn perform<'a>(&self, result: Vec<$crate::Value<'a, $output_type>>) -> $output_type {
                     let mut iterator = result.into_iter();
                     $(
                         let $varname = iterator.next().expect("must perform action with same number of arguments as tokens");

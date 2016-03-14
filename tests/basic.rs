@@ -3,7 +3,7 @@ extern crate earley;
 
 use earley::*;
 
-fn grammar() -> Grammar<u32, &'static str> {
+fn grammar() -> Grammar<&'static str, u32> {
     Grammar::new(vec![
         earley_production!(&'static str: "Sum" => [NonTerminal("Sum"), Terminal("+"), NonTerminal("Product")]         (a, _, b) -> u32; { a.get() + b.get() }),
         earley_production!(&'static str: "Sum" => [NonTerminal("Product")]                                            (a) -> u32;       { a.get() }),

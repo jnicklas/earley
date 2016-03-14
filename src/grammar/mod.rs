@@ -14,20 +14,20 @@ pub use grammar::rule::Rule;
 pub use grammar::rule_name::RuleName;
 pub use grammar::token::{Token, Terminal, NonTerminal};
 
-type RuleMap<O, N> = BTreeMap<N, Rule<O, N>>;
+type RuleMap<N, O> = BTreeMap<N, Rule<N, O>>;
 
-pub struct Grammar<O, N> where N: RuleName {
+pub struct Grammar<N, O> where N: RuleName {
     starting_rule: N,
-    rules: RuleMap<O, N>,
+    rules: RuleMap<N, O>,
 }
 
-impl<O, N> Grammar<O, N> where N: RuleName {
-    pub fn new(productions: Vec<Box<Production<O, N>>>) -> Grammar<O, N> {
+impl<N, O> Grammar<N, O> where N: RuleName {
+    pub fn new(productions: Vec<Box<Production<N, O>>>) -> Grammar<N, O> {
         let first_rule_name = {
             productions.get(0).expect("grammar must have at least one rule").get_name()
         };
 
-        let mut rules: RuleMap<O, N> = productions
+        let mut rules: RuleMap<N, O> = productions
             .into_iter()
             .group_by(|p| p.get_name())
             .map(|(name, productions)| (name, Rule::new(name, productions)))
@@ -45,19 +45,19 @@ impl<O, N> Grammar<O, N> where N: RuleName {
         self.starting_rule
     }
 
-    pub fn get_rule(&self, name: N) -> Option<&Rule<O, N>> {
+    pub fn get_rule(&self, name: N) -> Option<&Rule<N, O>> {
         self.rules.get(&name)
     }
 
-    pub fn productions_for_starting_rule(&self) -> &[Box<Production<O, N>>] {
+    pub fn productions_for_starting_rule(&self) -> &[Box<Production<N, O>>] {
         &self.rules[&self.starting_rule].get_productions()
     }
 
-    pub fn productions_for(&self, name: N) -> &[Box<Production<O, N>>] {
+    pub fn productions_for(&self, name: N) -> &[Box<Production<N, O>>] {
         &self.rules[&name].get_productions()
     }
 
-    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, O, N> where O: 'a {
+    pub fn build_table<'a>(&'a self, input: &'a str) -> ItemTable<'a, N, O> where O: 'a {
         ItemTable::build(self, input)
     }
 
@@ -67,7 +67,7 @@ impl<O, N> Grammar<O, N> where N: RuleName {
     }
 }
 
-fn mark_nullable<O, N>(rules: &mut RuleMap<O, N>) where N: RuleName {
+fn mark_nullable<N, O>(rules: &mut RuleMap<N, O>) where N: RuleName {
     loop {
         let mut found_nullable_rule = false;
         for (_, rule) in rules.iter() {

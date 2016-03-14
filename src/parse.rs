@@ -24,7 +24,7 @@ impl<'a, O> Value<'a, O> where O: 'a {
     }
 }
 
-fn find_edges<'a, O, N>(s: &'a ItemTable<'a, O, N>, mut set: usize, item: Item<'a, O, N>) -> O where O: 'a, N: RuleName {
+fn find_edges<'a, N, O>(s: &'a ItemTable<'a, N, O>, mut set: usize, item: Item<'a, N, O>) -> O where O: 'a, N: RuleName {
     let tokens = item.get_tokens();
     let mut children = Vec::with_capacity(tokens.len());
 
@@ -58,7 +58,7 @@ fn find_edges<'a, O, N>(s: &'a ItemTable<'a, O, N>, mut set: usize, item: Item<'
     item.perform(children)
 }
 
-pub fn parse<'a, O, N>(s: &'a ItemTable<O, N>) -> Option<O> where O: 'a, N: RuleName {
+pub fn parse<'a, N, O>(s: &'a ItemTable<N, O>) -> Option<O> where O: 'a, N: RuleName {
     match s.matching_items().into_iter().nth(0) {
         Some(item) => {
             Some(find_edges(s, s.get_input().len(), item.clone()))
